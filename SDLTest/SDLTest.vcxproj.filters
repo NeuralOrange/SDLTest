@@ -21,10 +21,21 @@
     <ClCompile Include="Spirit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ControllableSpirit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Spirit.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ControllableSpirit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\uika.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

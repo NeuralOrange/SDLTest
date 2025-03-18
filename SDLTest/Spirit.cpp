@@ -1,6 +1,8 @@
 #include "Spirit.h"
 Spirit_Result Spirit::Draw(float x, float y)
 {
+	if (texture_ == nullptr)
+		return Spirit_FILAURE;
 	SDL_FRect rect = { x, y, texture_->w, texture_->h };
 	if (SDL_RenderTexture(renderer_, texture_, NULL, &rect))
 		return Spirit_SUCCESS;

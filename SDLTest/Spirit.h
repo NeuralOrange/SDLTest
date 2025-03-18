@@ -24,7 +24,7 @@ public:
 	}
 	Spirit_Result Draw(float x, float y);
 	Spirit_Result Draw(int x, int y);
-private:
+protected:
 	SDL_Surface* surface_;
 	SDL_Texture* texture_;
 	SDL_Renderer* renderer_;
