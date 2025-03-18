@@ -12,6 +12,10 @@ class ControllableSpirit : Spirit
 {
 	public:
 		SDL_FRect rect_;
+		float xVelocity = 0;
+		float yVelocity = 0;
+		float vLimit = 0.1;
+		float acceleration = 0.02;
 		ControllableSpirit(Spirit spirit,int x,int y):Spirit(spirit)
 		{
 			rect_.x = x;
@@ -19,9 +23,11 @@ class ControllableSpirit : Spirit
 			rect_.w = surface_->w;
 			rect_.h = surface_->h;
 		}
+		Spirit_Result ChangeVelocity(MoveDirection dir,Uint64 time);
+		Spirit_Result MoveBySpeed(Uint64 time);
 		Spirit_Result Draw();
 		Spirit_Result Move(MoveDirection dir,float moveDistance);
-		Spirit_Result SetPosition(int x, int y);
-		Spirit_Result ChangePosition(int x_change, int y_change);
+		Spirit_Result SetPosition(float x, float y);
+		Spirit_Result ChangePosition(float x_change, float y_change);
 };
 

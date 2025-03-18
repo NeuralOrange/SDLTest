@@ -3,8 +3,9 @@ Spirit_Result Spirit::Draw(float x, float y)
 {
 	if (texture_ == nullptr)
 		return Spirit_FILAURE;
-	SDL_FRect rect = { x, y, texture_->w, texture_->h };
-	if (SDL_RenderTexture(renderer_, texture_, NULL, &rect))
+	SDL_FRect drect = { x, y, texture_->w/stateNum_, texture_->h };
+	SDL_FRect srect = { texture_->w / stateNum_ * state_,0,texture_->w / stateNum_,texture_->h };
+	if (SDL_RenderTexture(renderer_.get(), texture_.get(), &srect, &drect))
 		return Spirit_SUCCESS;
 	else
 	{

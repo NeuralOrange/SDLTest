@@ -1,6 +1,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1 /* use the callbacks instead of main() */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <memory>
 #include "Spirit.h"
 #include "ControllableSpirit.h"
 
@@ -26,7 +27,7 @@ typedef struct
 /// <param name="conSpir">可控Spirit</param>
 /// <param name="key_code">键盘输入</param>
 /// <returns></returns>
-static SDL_AppResult handle_key_event_(ControllableSpirit* conSpir,SDL_Scancode key_code)
+static SDL_AppResult handle_key_down_event_(ControllableSpirit* conSpir,SDL_Scancode key_code)
 {
     switch (key_code) {
         /* Quit. */
@@ -39,16 +40,45 @@ static SDL_AppResult handle_key_event_(ControllableSpirit* conSpir,SDL_Scancode 
         break;
         /* Decide new direction of the snake. */
     case SDL_SCANCODE_RIGHT:
-        conSpir->Move(DIR_RIGHT, 5);
+        conSpir->ChangeVelocity(DIR_RIGHT,5);
         break;
     case SDL_SCANCODE_UP:
-        conSpir->Move(DIR_UP, 5);
+        conSpir->ChangeVelocity(DIR_UP, 5);
         break;
     case SDL_SCANCODE_LEFT:
-        conSpir->Move(DIR_LEFT, 5);
+        conSpir->ChangeVelocity(DIR_LEFT, 5);
         break;
     case SDL_SCANCODE_DOWN:
-        conSpir->Move(DIR_DOWN, 5);
+        conSpir->ChangeVelocity(DIR_DOWN, 5);
+        break;
+    default:
+        break;
+    }
+    return SDL_APP_CONTINUE;
+}
+
+static SDL_AppResult handle_key_up_event_(ControllableSpirit* conSpir, SDL_Scancode key_code)
+{
+    switch (key_code) {
+        /* Quit. */
+    case SDL_SCANCODE_ESCAPE:
+    case SDL_SCANCODE_Q:
+        return SDL_APP_SUCCESS;
+        /* Restart the game as if the program was launched. */
+    case SDL_SCANCODE_R:
+        conSpir->SetPosition(0, 0);
+        break;
+    case SDL_SCANCODE_RIGHT:
+        conSpir->xVelocity = 0;
+        break;
+    case SDL_SCANCODE_UP:
+        conSpir->yVelocity = 0;
+        break;
+    case SDL_SCANCODE_LEFT:
+        conSpir->xVelocity = 0;
+        break;
+    case SDL_SCANCODE_DOWN:
+        conSpir->yVelocity = 0;
         break;
     default:
         break;
@@ -105,6 +135,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     const Uint64 now = SDL_GetTicks();
     //游戏逻辑循环
     while ((now - as->last_step) >= STEP_RATE_IN_MILLISECONDS) {
+        as->spirit->MoveBySpeed(now - as->last_step);
         as->last_step += STEP_RATE_IN_MILLISECONDS;
     }
     SDL_RenderClear(as->renderer);
@@ -183,7 +214,9 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     case SDL_EVENT_JOYSTICK_AXIS_MOTION:
         return handle_ball_event_(spirit,event->jaxis);
     case SDL_EVENT_KEY_DOWN:
-        return handle_key_event_(spirit, event->key.scancode);
+        return handle_key_down_event_(spirit, event->key.scancode);
+    //case SDL_EVENT_KEY_UP:
+    //    return handle_key_up_event_(spirit, event->key.scancode);
     default:
         break;
     }
