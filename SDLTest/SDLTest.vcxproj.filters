@@ -21,7 +21,7 @@
     <ClCompile Include="Spirit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ControllableSpirit.cpp">
+    <ClCompile Include="MovingSpirit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,12 +29,15 @@
     <ClInclude Include="Spirit.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ControllableSpirit.h">
+    <ClInclude Include="MovingSpirit.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resource\uika.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\uika1.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
