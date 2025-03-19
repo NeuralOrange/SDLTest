@@ -2,8 +2,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <memory>
+#include <vector>
+#include <string>
+#include "SpiritTree.h"
 #include "Spirit.h"
 #include "MovingSpirit.h"
+#include "SpiritRendering.h"
 
 #define STEP_RATE_IN_MILLISECONDS  10
 #define SDL_WINDOW_WIDTH           1000
@@ -136,7 +140,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     }
     SDL_RenderClear(as->renderer);
     //Í¼ÏñäÖÈ¾
-    as->background->Draw(0,0);
+    as->background->Draw();
     as->spirit->Draw();
     SDL_RenderPresent(as->renderer);
     return SDL_APP_CONTINUE;
@@ -172,12 +176,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     if (!SDL_CreateWindowAndRenderer("examples/demo/snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
+    
 
     as->last_step = SDL_GetTicks();
-    as->spirit = new MovingSpirit(Spirit("resource/uika1.bmp", as->renderer,3), 0, 0);
-    as->background = new Spirit("resource/mura.bmp", as->renderer);
+    as->spirit = new MovingSpirit(Spirit("resource/uika1.bmp", as->renderer,  "uika", 3));
+    as->background = new Spirit("resource/mura.bmp", as->renderer, "background");
     return SDL_APP_CONTINUE;
 }
+
 
 
 /// <summary>

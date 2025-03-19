@@ -30,11 +30,6 @@ Spirit_Result MovingSpirit::MoveBySpeed(Uint64 time)
 	return ChangePosition(xVelocity * time, yVelocity * time);
 }
 
-Spirit_Result MovingSpirit::Draw()
-{
-	return Spirit::Draw(rect_.x, rect_.y);
-}
-
 Spirit_Result MovingSpirit::Move(MoveDirection dir, float moveDistance)
 {
 	switch (dir)

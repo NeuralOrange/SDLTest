@@ -24,12 +24,24 @@
     <ClCompile Include="MovingSpirit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SpiritRendering.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SpiritTree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Spirit.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MovingSpirit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SpiritRendering.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SpiritTree.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -40,5 +52,10 @@
     <Image Include="resource\uika1.bmp">
       <Filter>资源文件</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SDL3.dll">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
