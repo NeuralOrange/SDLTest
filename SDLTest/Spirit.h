@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -38,18 +39,20 @@ public:
 		texture_ = TexturePtr(SDL_CreateTextureFromSurface(renderer_.get(), surface_.get()), SDL_DestroyTexture);
 		rect_ = { x,y,float(texture_.get()->w / stateNum_),float(texture_.get()->h) };
 	}
-	Spirit(const char* bitmapFileName, RendererPtr renderer,Uint64 stateNum = 1,float x = 0,float y = 0) : Spirit(SDL_LoadBMP(bitmapFileName), renderer,stateNum,x,y)
+	Spirit(const char* FileName, RendererPtr renderer,Uint64 stateNum = 1,float x = 0,float y = 0) : Spirit(IMG_Load(FileName), renderer, stateNum, x, y)
 	{
 
 	}
 
 	Spirit(TexturePtr texture, RendererPtr renderer, Uint64 stateNum = 1, float x = 0, float y = 0) 
 	{
+		renderer_ = renderer;
+		stateNum_ = stateNum;
 		surface_ = nullptr;
 		texture_ = texture;
 		rect_ = { x,y,float(texture_.get()->w / stateNum_),float(texture_.get()->h) };
-		renderer_ = renderer;
-		stateNum_ = stateNum;
+
+		
 	}
 
 	Spirit_Result Draw();

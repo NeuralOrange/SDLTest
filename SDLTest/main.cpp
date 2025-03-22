@@ -1,6 +1,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1 /* use the callbacks instead of main() */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3_image/SDL_image.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -8,6 +9,7 @@
 #include "Spirit.h"
 #include "MovingSpirit.h"
 #include "SpiritManager.h"
+#include "SDLAudioPlayer.h"
 #include "GameObject.h"
 #include "Enemy.h"
 
@@ -23,6 +25,8 @@ typedef struct
     SDL_Renderer* renderer;
     Uint64 last_step;
 	SpiritManager* spiritManager;
+	SDLAudioPlayer* audioPlayer;
+	SDLAudioPlayer* audioPlayer1;
 } AppState;
 
 
@@ -46,6 +50,14 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
         /* Restart the game as if the program was launched. */
     case SDL_SCANCODE_R:
         conSpir->SetPosition(0, 0);
+        as->audioPlayer->Pause();
+        break;
+    case SDL_SCANCODE_SPACE:
+        as->audioPlayer->Play();
+        as->audioPlayer1->GenerateSineWave(SDLAudioPlayer::PianoKeyFrequency(30),1050);
+        break;
+    case SDL_SCANCODE_P:
+        as->audioPlayer->RePlay();
         break;
         /* Decide new direction of the snake. */
     case SDL_SCANCODE_RIGHT:
@@ -141,6 +153,8 @@ static SDL_AppResult handle_hat_event_(void* appstate, const std::string& name, 
     return SDL_APP_CONTINUE;
 }
 
+
+
 /// <summary>
 /// 在主循环中反复调用，用于处理游戏逻辑和渲染。 
 /// </summary>
@@ -152,22 +166,35 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     const Uint64 now = SDL_GetTicks();
     //游戏逻辑循环
 	while ((now - as->last_step) >= STEP_RATE_IN_MILLISECONDS) {
+
 		as->spiritManager->MoveAllBySpeed(now - as->last_step);
 		as->spiritManager->FlashSpirit("uika");
-		auto enemy = as->spiritManager->GetGameObject("enemy");
-		std::shared_ptr<Enemy> enemyPtr = Enemy::GetEnemyPtr(enemy);
-		enemyPtr->Update(now-as->last_step);
-		if (GameObject::CheckCollision(as->spiritManager->GetGameObject("uika"), enemy))
-		    enemyPtr->TakeDamage(2);
+		//auto enemy = as->spiritManager->GetGameObject("enemy");
+		//std::shared_ptr<Enemy> enemyPtr = Enemy::GetEnemyPtr(enemy);
+		//enemyPtr->Update(now-as->last_step);
+		//if (GameObject::CheckCollision(as->spiritManager->GetGameObject("uika"), enemy))
+		//    enemyPtr->TakeDamage(2);
         as->last_step = now;
     }
     SDL_RenderClear(as->renderer);
 
+    SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
+    SDL_RenderClear(as->renderer);  /* start with a blank canvas. */
+
+    SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);  /* white, full alpha */
+    SDL_RenderDebugText(as->renderer, 272, 100, "Hello world!");
+
     //图像渲染
 	as->spiritManager->DrawAll();
+
+
+
+
     SDL_RenderPresent(as->renderer);
     return SDL_APP_CONTINUE;
 }
+
+
 
 /// <summary>
 /// 程序初始化时调用，设置应用状态并创建窗口和渲染器。
@@ -176,6 +203,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 /// <param name="argc"></param>
 /// <param name="argv"></param>
 /// <returns>返回SDL_APP_CONTINUE代表初始化成功</returns>
+
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
  
@@ -183,7 +211,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -201,14 +229,20 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     
 	as->spiritManager = new SpiritManager(as->renderer);
 	as->spiritManager->CreateSpirit("resource/uika1.bmp", "uika", MOVE_SPIRIT_TYPE, 3,200,70);
-    as->spiritManager->CreateSpirit("resource/mura.bmp", "background", SPIRIT_TYPE);
-	as->spiritManager->CreateSpirit("resource/sakiko.bmp", "sakiko", SPIRIT_TYPE,2,0,0);
-	as->spiritManager->GetSpirit("sakiko")->Scaling(0.6);
+    //as->spiritManager->CreateSpirit("resource/mura.bmp", "background", SPIRIT_TYPE);
+	as->spiritManager->CreateSpirit("resource/sa.png", "sa", SPIRIT_TYPE,1,0,0);
+	as->audioPlayer = new SDLAudioPlayer();
+	as->audioPlayer1 = new SDLAudioPlayer();
+	as->audioPlayer->LoadWAV("resource/music/dark.wav");
+	//as->spiritManager->GetSpirit("sakiko")->Scaling(0.6);
     //as->spiritManager->GetSpirit("uika")->AddChild(as->spiritManager->GetSpirit("sakiko"),"sakiko");
-	std::shared_ptr<GameObject> enemy = std::make_shared<Enemy>("enemy", *as->spiritManager->GetSpirit("sakiko"), 100);
-    std::shared_ptr<GameObject> uika = std::make_shared<Enemy>("uika", *as->spiritManager->GetSpirit("uika"), 200);
-	as->spiritManager->AddGameObject(enemy);
-	as->spiritManager->AddGameObject(uika);
+	//std::shared_ptr<GameObject> enemy = std::make_shared<Enemy>("enemy", *as->spiritManager->GetSpirit("sakiko"), 100);
+    //std::shared_ptr<GameObject> uika = std::make_shared<Enemy>("uika", *as->spiritManager->GetSpirit("uika"), 200);
+	//as->spiritManager->AddGameObject(enemy);
+	//as->spiritManager->AddGameObject(uika);
+    SDL_AudioSpec spec;
+
+    
     as->last_step = SDL_GetTicks();
     return SDL_APP_CONTINUE;
 }

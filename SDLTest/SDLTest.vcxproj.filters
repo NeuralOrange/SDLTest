@@ -30,6 +30,9 @@
     <ClCompile Include="SpiritNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SDLAudioPlayer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Spirit.h">
@@ -50,6 +53,9 @@
     <ClInclude Include="Enemy.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SDLAudioPlayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resource\uika.bmp">
@@ -61,10 +67,22 @@
     <Image Include="resource\sakiko.bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="resource\sa.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\sa.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL3.dll">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="SDL3_image.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resource\music\dark.wav">
+      <Filter>资源文件</Filter>
+    </Media>
   </ItemGroup>
 </Project>

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="SDLAudioPlayer.cpp" />
     <ClCompile Include="MovingSpirit.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Spirit.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="SpiritNode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SDLAudioPlayer.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="MovingSpirit.h" />
@@ -34,12 +36,18 @@
     <ClInclude Include="SpiritNode.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resource\sa.jpg" />
+    <Image Include="resource\sa.png" />
     <Image Include="resource\sakiko.bmp" />
     <Image Include="resource\uika.bmp" />
     <Image Include="resource\uika1.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL3.dll" />
+    <None Include="SDL3_image.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resource\music\dark.wav" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -94,7 +102,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\SDL3-3.2.8\include</IncludePath>
+    <IncludePath>C:\SDL3_image-3.2.4\include;C:\SDL3-3.2.8\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>D:\SDL3-3.2.8\include</IncludePath>
@@ -139,8 +147,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\SDL3-3.2.8\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_test.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\SDL3_image-3.2.4\lib\x64;C:\SDL3-3.2.8\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_test.lib;SDL3_image.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
