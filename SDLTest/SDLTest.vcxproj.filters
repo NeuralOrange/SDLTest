@@ -24,10 +24,10 @@
     <ClCompile Include="MovingSpirit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SpiritRendering.cpp">
+    <ClCompile Include="SpiritManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SpiritTree.cpp">
+    <ClCompile Include="SpiritNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,10 +38,16 @@
     <ClInclude Include="MovingSpirit.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SpiritRendering.h">
+    <ClInclude Include="SpiritManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SpiritTree.h">
+    <ClInclude Include="SpiritNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,6 +56,9 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resource\uika1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\sakiko.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

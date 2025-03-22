@@ -26,3 +26,25 @@ Spirit_Result Spirit::FlashState()
 	}
 	return Spirit_SUCCESS;
 }
+
+Spirit_Result Spirit::ChangePosition(float x_change, float y_change)
+{
+	rect_.x += x_change;
+	rect_.y += y_change;
+	return Spirit_SUCCESS;
+}
+
+Spirit_Result Spirit::SetPosition(float x, float y)
+{
+	rect_.x = x;
+	rect_.y = y;
+	return Spirit_SUCCESS;
+}
+
+
+Spirit_Result Spirit::Scaling(float scaling_ratio)
+{
+	rect_.w *= scaling_ratio;
+	rect_.h *= scaling_ratio;
+	return Spirit_SUCCESS;
+}

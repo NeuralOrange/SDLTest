@@ -1,66 +1,68 @@
+#pragma once
 #include "MovingSpirit.h"
+#include "SpiritNode.h"
 
-Spirit_Result MovingSpirit::ChangeVelocity(MoveDirection dir, float limit)
+Spirit_Result MovingSpiritComponent::ChangeVelocity(MoveDirection dir, float limit)
 {
-	switch (dir)
-	{
-	case DIR_RIGHT:
-		if (xVelocity < limit*vLimit)
-			xVelocity += acceleration;
-		break;
-	case DIR_UP:
-		if (yVelocity > -limit*vLimit)
-			yVelocity -= acceleration;
-		break;
-	case DIR_LEFT:
-		if (xVelocity > -limit*vLimit)
-			xVelocity -= acceleration;
-		break;
-	case DIR_DOWN:
-		if (yVelocity < limit*vLimit)
-			yVelocity += acceleration;
-	default:
-		break;
-	}
-	return Spirit_SUCCESS;
+    switch (dir)
+    {
+    case DIR_RIGHT:
+        xVelocity += acceleration;
+        if (xVelocity > limit) xVelocity = limit;
+        break;
+    case DIR_UP:
+        yVelocity -= acceleration;
+        if (yVelocity < -limit) yVelocity = -limit;
+        break;
+    case DIR_LEFT:
+        xVelocity -= acceleration;
+        if (xVelocity < -limit) xVelocity = -limit;
+        break;
+    case DIR_DOWN:
+        yVelocity += acceleration;
+        if (yVelocity > limit) yVelocity = limit;
+        break;
+    default:
+        return Spirit_FILAURE;
+    }
+    return Spirit_SUCCESS;
 }
 
-Spirit_Result MovingSpirit::MoveBySpeed(Uint64 time)
+Spirit_Result MovingSpiritComponent::MoveBySpeed(Uint64 time, SpiritNode& spirit)
 {
-	return ChangePosition(xVelocity * time, yVelocity * time);
+    if (!spirit.enableMovingComponent) return Spirit_FILAURE;
+
+    float xChange = xVelocity * time;
+    float yChange = yVelocity * time;
+
+    return spirit.ChangePosition(xChange, yChange);
 }
 
-Spirit_Result MovingSpirit::Move(MoveDirection dir, float moveDistance)
+Spirit_Result MovingSpiritComponent::Move(MoveDirection dir, float moveDistance, SpiritNode& spirit)
 {
-	switch (dir)
-	{
-	case DIR_RIGHT:
-		rect_.x += moveDistance;
-		break;
-	case DIR_UP:
-		rect_.y -= moveDistance;
-		break;
-	case DIR_LEFT:
-		rect_.x -= moveDistance;
-		break;
-	case DIR_DOWN:
-		rect_.y += moveDistance;
-	default:
-		break;
-	}
-	return Spirit_SUCCESS;
+    if (!spirit.enableMovingComponent) return Spirit_FILAURE;
+
+    float xChange = 0;
+    float yChange = 0;
+
+    switch (dir)
+    {
+    case DIR_RIGHT:
+        xChange = moveDistance;
+        break;
+    case DIR_UP:
+        yChange = -moveDistance;
+        break;
+    case DIR_LEFT:
+        xChange = -moveDistance;
+        break;
+    case DIR_DOWN:
+        yChange = moveDistance;
+        break;
+    default:
+        return Spirit_FILAURE;
+    }
+
+    return spirit.ChangePosition(xChange, yChange);
 }
 
-Spirit_Result MovingSpirit::SetPosition(float x, float y)
-{
-	rect_.x = x;
-	rect_.y = y;
-	return Spirit_SUCCESS;
-}
-
-Spirit_Result MovingSpirit::ChangePosition(float x_change, float y_change)
-{
-	rect_.x += x_change;
-	rect_.y += y_change;
-	return Spirit_SUCCESS;
-}

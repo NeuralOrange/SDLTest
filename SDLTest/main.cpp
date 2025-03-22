@@ -4,10 +4,12 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "SpiritTree.h"
+#include "SpiritNode.h"
 #include "Spirit.h"
 #include "MovingSpirit.h"
-#include "SpiritRendering.h"
+#include "SpiritManager.h"
+#include "GameObject.h"
+#include "Enemy.h"
 
 #define STEP_RATE_IN_MILLISECONDS  10
 #define SDL_WINDOW_WIDTH           1000
@@ -20,19 +22,22 @@ typedef struct
     SDL_Window* window;
     SDL_Renderer* renderer;
     Uint64 last_step;
-    MovingSpirit* spirit;
-    Spirit* background;
+	SpiritManager* spiritManager;
 } AppState;
 
 
-/// <summary>
-/// 键盘输入事件
-/// </summary>
-/// <param name="conSpir">可控Spirit</param>
-/// <param name="key_code">键盘输入</param>
-/// <returns></returns>
-static SDL_AppResult handle_key_down_event_(MovingSpirit* conSpir, SDL_Scancode key_code)
+ ///<summary>
+ ///键盘输入事件
+ ///</summary>
+ ///<param name="conSpir">可控Spirit</param>
+ ///<param name="key_code">键盘输入</param>
+ ///<returns></returns>
+static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& name, SDL_Scancode key_code)
 {
+	AppState* as = (AppState*)appstate;
+	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
+	if (conSpir == nullptr||!conSpir->enableMovingComponent)
+		return SDL_APP_CONTINUE;
     switch (key_code) {
         /* Quit. */
     case SDL_SCANCODE_ESCAPE:
@@ -44,16 +49,16 @@ static SDL_AppResult handle_key_down_event_(MovingSpirit* conSpir, SDL_Scancode 
         break;
         /* Decide new direction of the snake. */
     case SDL_SCANCODE_RIGHT:
-        conSpir->ChangeVelocity(DIR_RIGHT);
+        conSpir->movingComponent.ChangeVelocity(DIR_RIGHT);
         break;
     case SDL_SCANCODE_UP:
-        conSpir->ChangeVelocity(DIR_UP);
+        conSpir->movingComponent.ChangeVelocity(DIR_UP);
         break;
     case SDL_SCANCODE_LEFT:
-        conSpir->ChangeVelocity(DIR_LEFT);
+        conSpir->movingComponent.ChangeVelocity(DIR_LEFT);
         break;
     case SDL_SCANCODE_DOWN:
-        conSpir->ChangeVelocity(DIR_DOWN);
+        conSpir->movingComponent.ChangeVelocity(DIR_DOWN);
         break;
     default:
         break;
@@ -61,22 +66,26 @@ static SDL_AppResult handle_key_down_event_(MovingSpirit* conSpir, SDL_Scancode 
     return SDL_APP_CONTINUE;
 }
 
-static SDL_AppResult handle_key_up_event_(MovingSpirit* conSpir, SDL_Scancode key_code)
+static SDL_AppResult handle_key_up_event_(void* appstate, const std::string& name, SDL_Scancode key_code)
 {
+	AppState* as = (AppState*)appstate;
+	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
+	if (conSpir == nullptr || !conSpir->enableMovingComponent)
+		return SDL_APP_CONTINUE;
     const bool* state = SDL_GetKeyboardState(NULL);
     switch (key_code) {
     case SDL_SCANCODE_RIGHT:
     case SDL_SCANCODE_LEFT:
         if (!state[SDL_SCANCODE_RIGHT]&&!state[SDL_SCANCODE_LEFT])
         {
-            conSpir->xVelocity = 0;
+            conSpir->movingComponent.xVelocity = 0;
         }
         break;
     case SDL_SCANCODE_UP:
     case SDL_SCANCODE_DOWN:
         if (!state[SDL_SCANCODE_UP] && !state[SDL_SCANCODE_DOWN])
         {
-            conSpir->yVelocity = 0;
+            conSpir->movingComponent.yVelocity = 0;
         }
         break;
     default:
@@ -85,8 +94,12 @@ static SDL_AppResult handle_key_up_event_(MovingSpirit* conSpir, SDL_Scancode ke
     return SDL_APP_CONTINUE;
 }
 
-static SDL_AppResult handle_axis_event_(MovingSpirit* conSpir, SDL_JoyAxisEvent event) {
-
+static SDL_AppResult handle_axis_event_(void* appstate, const std::string& name, SDL_JoyAxisEvent event)
+{
+	AppState* as = (AppState*)appstate;
+	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
+	if (conSpir == nullptr || !conSpir->enableMovingComponent)
+		return SDL_APP_CONTINUE;
     if (event.axis == SDL_GAMEPAD_AXIS_LEFTX) {
         conSpir->ChangePosition( event.value / 3000,0);
     }
@@ -103,19 +116,24 @@ static SDL_AppResult handle_axis_event_(MovingSpirit* conSpir, SDL_JoyAxisEvent 
 /// <param name="conSpir">可控Spirit</param>
 /// <param name="hat">手柄十字键输入</param>
 /// <returns></returns>
-static SDL_AppResult handle_hat_event_(MovingSpirit* conSpir, Uint8 hat) {
+static SDL_AppResult handle_hat_event_(void* appstate, const std::string& name, Uint8 hat)
+{
+	AppState* as = (AppState*)appstate;
+	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
+	if (conSpir == nullptr || !conSpir->enableMovingComponent)
+		return SDL_APP_CONTINUE;
     switch (hat) {
     case SDL_HAT_RIGHT:
-        conSpir->ChangeVelocity(DIR_RIGHT);
+        conSpir->movingComponent.ChangeVelocity(DIR_RIGHT);
         break;
     case SDL_HAT_UP:
-        conSpir->ChangeVelocity(DIR_UP);
+        conSpir->movingComponent.ChangeVelocity(DIR_UP);
         break;
     case SDL_HAT_LEFT:
-        conSpir->ChangeVelocity(DIR_LEFT);
+        conSpir->movingComponent.ChangeVelocity(DIR_LEFT);
         break;
     case SDL_HAT_DOWN:
-        conSpir->ChangeVelocity(DIR_DOWN);
+        conSpir->movingComponent.ChangeVelocity(DIR_DOWN);
         break;
     default:
         break;
@@ -133,15 +151,20 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     AppState* as = (AppState*)appstate;
     const Uint64 now = SDL_GetTicks();
     //游戏逻辑循环
-    while ((now - as->last_step) >= STEP_RATE_IN_MILLISECONDS) {
-        as->spirit->MoveBySpeed(now - as->last_step);
-        as->spirit->FlashState();
+	while ((now - as->last_step) >= STEP_RATE_IN_MILLISECONDS) {
+		as->spiritManager->MoveAllBySpeed(now - as->last_step);
+		as->spiritManager->FlashSpirit("uika");
+		auto enemy = as->spiritManager->GetGameObject("enemy");
+		std::shared_ptr<Enemy> enemyPtr = Enemy::GetEnemyPtr(enemy);
+		enemyPtr->Update(now-as->last_step);
+		if (GameObject::CheckCollision(as->spiritManager->GetGameObject("uika"), enemy))
+		    enemyPtr->TakeDamage(2);
         as->last_step = now;
     }
     SDL_RenderClear(as->renderer);
+
     //图像渲染
-    as->background->Draw();
-    as->spirit->Draw();
+	as->spiritManager->DrawAll();
     SDL_RenderPresent(as->renderer);
     return SDL_APP_CONTINUE;
 }
@@ -155,8 +178,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 /// <returns>返回SDL_APP_CONTINUE代表初始化成功</returns>
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-    size_t i;
-
+ 
     if (!SDL_SetAppMetadata("Example Snake game", "1.0", "com.example.Snake")) {
         return SDL_APP_FAILURE;
     }
@@ -177,10 +199,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
     
-
+	as->spiritManager = new SpiritManager(as->renderer);
+	as->spiritManager->CreateSpirit("resource/uika1.bmp", "uika", MOVE_SPIRIT_TYPE, 3,200,70);
+    as->spiritManager->CreateSpirit("resource/mura.bmp", "background", SPIRIT_TYPE);
+	as->spiritManager->CreateSpirit("resource/sakiko.bmp", "sakiko", SPIRIT_TYPE,2,0,0);
+	as->spiritManager->GetSpirit("sakiko")->Scaling(0.6);
+    //as->spiritManager->GetSpirit("uika")->AddChild(as->spiritManager->GetSpirit("sakiko"),"sakiko");
+	std::shared_ptr<GameObject> enemy = std::make_shared<Enemy>("enemy", *as->spiritManager->GetSpirit("sakiko"), 100);
+    std::shared_ptr<GameObject> uika = std::make_shared<Enemy>("uika", *as->spiritManager->GetSpirit("uika"), 200);
+	as->spiritManager->AddGameObject(enemy);
+	as->spiritManager->AddGameObject(uika);
     as->last_step = SDL_GetTicks();
-    as->spirit = new MovingSpirit(Spirit("resource/uika1.bmp", as->renderer,  "uika", 3));
-    as->background = new Spirit("resource/mura.bmp", as->renderer, "background");
     return SDL_APP_CONTINUE;
 }
 
@@ -194,7 +223,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 /// <returns></returns>
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
-    MovingSpirit* spirit = ((AppState*)appstate)->spirit;
     switch (event->type) {
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
@@ -214,13 +242,13 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
         break;
     case SDL_EVENT_JOYSTICK_HAT_MOTION:
-        return handle_hat_event_(spirit, event->jhat.value);
+        return handle_hat_event_(appstate,"uika", event->jhat.value);
     case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-        return handle_axis_event_(spirit, event->jaxis);
+        return handle_axis_event_(appstate,"uika", event->jaxis);
     case SDL_EVENT_KEY_DOWN:
-        return handle_key_down_event_(spirit, event->key.scancode);
+        return handle_key_down_event_(appstate,"uika", event->key.scancode);
     case SDL_EVENT_KEY_UP:
-        return handle_key_up_event_(spirit, event->key.scancode);
+        return handle_key_up_event_(appstate,"uika", event->key.scancode);
     default:
         break;
     }

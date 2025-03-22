@@ -1,1 +1,0 @@
-#include "SpiritRendering.h"
