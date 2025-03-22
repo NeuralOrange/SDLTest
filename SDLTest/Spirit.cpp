@@ -1,8 +1,10 @@
 #include "Spirit.h"
-Spirit_Result Spirit::Draw(float x, float y)
+Spirit_Result Spirit::Draw()
 {
-	SDL_FRect rect = { x, y, texture_->w, texture_->h };
-	if (SDL_RenderTexture(renderer_, texture_, NULL, &rect))
+	if (!rendering||texture_ == nullptr)
+		return Spirit_FILAURE;
+	SDL_FRect srect = { texture_->w / stateNum_ * state_,0,texture_->w / stateNum_,texture_->h };
+	if (SDL_RenderTexture(renderer_.get(), texture_.get(), &srect, &rect_))
 		return Spirit_SUCCESS;
 	else
 	{
@@ -11,7 +13,16 @@ Spirit_Result Spirit::Draw(float x, float y)
 	}
 }
 
-Spirit_Result Spirit::Draw(int x, int y)
+Spirit_Result Spirit::FlashState()
 {
-	return this->Draw(float(x),float(y));
+	if (stateCounter_ < stateFlashTimes_)
+		stateCounter_++;
+	else
+	{
+		stateCounter_ = 0;
+		if (++state_  == stateNum_)
+			state_ = 0;
+
+	}
+	return Spirit_SUCCESS;
 }
