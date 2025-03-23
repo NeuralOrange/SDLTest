@@ -28,6 +28,13 @@ Spirit_Result MovingSpiritComponent::ChangeVelocity(MoveDirection dir, float lim
     return Spirit_SUCCESS;
 }
 
+Spirit_Result MovingSpiritComponent::ChangeVelocity(float vX, float vY)
+{
+    xVelocity = vX;
+    yVelocity = vY;
+    return Spirit_SUCCESS;
+}
+
 Spirit_Result MovingSpiritComponent::MoveBySpeed(Uint64 time, SpiritNode& spirit)
 {
     if (!spirit.enableMovingComponent) return Spirit_FILAURE;

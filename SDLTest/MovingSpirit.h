@@ -18,6 +18,7 @@ public:
     float acceleration = 0.2;
 
     Spirit_Result ChangeVelocity(MoveDirection dir, float limit = 1);
+    Spirit_Result ChangeVelocity(float vX, float vY);
     Spirit_Result MoveBySpeed(Uint64 time, SpiritNode& spirit);
     Spirit_Result Move(MoveDirection dir, float moveDistance, SpiritNode& spirit);
 };

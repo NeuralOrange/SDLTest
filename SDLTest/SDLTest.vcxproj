@@ -28,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SDLAudioPlayer.h" />
-    <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="MovingSpirit.h" />
     <ClInclude Include="Spirit.h" />
@@ -36,18 +35,17 @@
     <ClInclude Include="SpiritNode.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resource\sa.jpg" />
-    <Image Include="resource\sa.png" />
-    <Image Include="resource\sakiko.bmp" />
-    <Image Include="resource\uika.bmp" />
-    <Image Include="resource\uika1.bmp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="SDL3.dll" />
     <None Include="SDL3_image.dll" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="resource\music\dark.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\img\background.png" />
+    <Image Include="resource\img\bullet.png" />
+    <Image Include="resource\img\note.png" />
+    <Image Include="resource\img\pinao.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

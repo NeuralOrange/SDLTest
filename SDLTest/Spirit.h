@@ -24,6 +24,11 @@ public:
 	unsigned state_ = 0;
 	unsigned stateNum_;
 
+	unsigned stateFlashTimes_ = 5;
+
+
+	SDL_FRect rect_;
+
 	TexturePtr texture_;
 	/// <summary>
 	/// ¹¹Ôìº¯Êý
@@ -62,9 +67,7 @@ public:
 	Spirit_Result Scaling(float scaling_ratio);
 
 protected:
-	SDL_FRect rect_;
 	SurfacePtr surface_;
 	RendererPtr renderer_;
-	unsigned stateFlashTimes_ = 5;
 	unsigned stateCounter_ = 0;
 };
