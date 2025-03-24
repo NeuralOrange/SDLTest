@@ -11,7 +11,7 @@
 #include "SpiritManager.h"
 #include "SDLAudioPlayer.h"
 #include "GameObject.h"
-
+#include "EnemyAndBuffetManager.h"
 
 #define STEP_RATE_IN_MILLISECONDS  10
 #define SDL_WINDOW_WIDTH           1024
@@ -28,6 +28,7 @@ typedef struct
     Uint64 last_step;
 	SpiritManager* spiritManager;
 	SDLAudioPlayer* audioPlayer;
+    EnemyAndBuffetManager* enemyAndBuffetManager;
 } AppState;
 
 
@@ -43,6 +44,7 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
 	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
     std::shared_ptr<Player> PlayerPtr = Player::GetPtr(as->spiritManager->GetGameObject(name));
     std::shared_ptr<Bullet> bullet;
+    std::shared_ptr<Enemy> enemy;
     std::string attckResult;
 	if (conSpir == nullptr||!conSpir->enableMovingComponent)
 		return SDL_APP_CONTINUE;
@@ -53,8 +55,7 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
         return SDL_APP_SUCCESS;
         /* Restart the game as if the program was launched. */
     case SDL_SCANCODE_R:
-        conSpir->SetPosition(0, 0);
-        as->audioPlayer->Play("sin88");
+        //as->enemyAndBuffetManager->GenerateEnemy(1024,60+36*4-116,-0.1,0);
         break;
     case SDL_SCANCODE_SPACE:
         attckResult = PlayerPtr->Attack();
@@ -65,7 +66,8 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
         //as->audioPlayer1->GenerateSineWave(SDLAudioPlayer::PianoKeyFrequency(30),1050);
         break;
     case SDL_SCANCODE_P:
-        as->audioPlayer->Play("A_Major");
+        enemy = Enemy::GetPtr(as->spiritManager->GetGameObject(Enemy::EnemyName(0)));
+        enemy->TakeDamage(4);
         break;
 
         /* Decide new direction of the snake. */
@@ -180,14 +182,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         std::shared_ptr<Player> PlayerPtr = Player::GetPtr(as->spiritManager->GetGameObject("pinao"));
         std::shared_ptr<Background> BackgroundPtr = Background::GetPtr(as->spiritManager->GetGameObject("background"));
         BackgroundPtr->Update(now - as->last_step);
-        std::shared_ptr<Bullet> bulletPtr;
-		for (int i = 0; i != 20; i++) {
-			bulletPtr = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(i)));
-            bulletPtr->Update(now - as->last_step);
-        }
+        as->enemyAndBuffetManager->UpdataAll();
         PlayerPtr->Update(now-as->last_step);
-		//if (GameObject::CheckCollision(as->spiritManager->GetGameObject("uika"), enemy))
-		//    enemyPtr->TakeDamage(2);
         as->last_step = now;
     }
     SDL_RenderClear(as->renderer);
@@ -242,12 +238,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     }
     
 	as->spiritManager = new SpiritManager(as->renderer);
-	//as->spiritManager->CreateSpirit("resource/uika1.bmp", "uika", MOVE_SPIRIT_TYPE, 3,200,70);
-	//as->spiritManager->CreateSpirit("resource/sa.png", "sa", SPIRIT_TYPE,1,0,0);
 	as->audioPlayer = new SDLAudioPlayer();
-	as->audioPlayer->LoadWAV("dark", "resource/music/dark.wav");
-    as->audioPlayer->GenerateSineWave("sin44", 440, 1000);
-    as->audioPlayer->GenerateSineWave("sin88", 880, 1000);
+    as->enemyAndBuffetManager = new EnemyAndBuffetManager();
 
     as->audioPlayer->GenerateChord("A_Major", SpecialAudio::A_Major, 400);
     as->audioPlayer->GenerateChord("A_Minor", SpecialAudio::A_Minor, 400);
@@ -262,18 +254,27 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     as->audioPlayer->GenerateChord("G_Dom7", SpecialAudio::G_Dom7, 400);
     as->audioPlayer->GenerateChord("G_Major", SpecialAudio::G_Major, 400);
 
-    as->spiritManager->CreateSpirit(ImgPath + "background.png", "background", MOVE_SPIRIT_TYPE, 1, 0, -768);
-    as->spiritManager->GetSpirit("background")->Scaling(0.5);
+    as->spiritManager->CreateSpirit(ImgPath + "background.png", "background", MOVE_SPIRIT_TYPE, 1, 0, 0);
     as->spiritManager->AddGameObject(std::make_shared<Background>("background", as->spiritManager->GetSpirit("background")));
 
     as->spiritManager->CreateSpirit(ImgPath+"pinao.png", "pinao", MOVE_SPIRIT_TYPE, 1, 100, 100);
     as->spiritManager->GetSpirit("pinao")->Scaling(0.2);
     as->spiritManager->AddGameObject(std::make_shared<Player>("pinao",as->spiritManager->GetSpirit("pinao")));
 
-    as->spiritManager->CreateSpirit(ImgPath + "note.png", "note", SPIRIT_TYPE, 3, 100, 50);
+    as->spiritManager->CreateSpirit(ImgPath + "note.png", "note", SPIRIT_TYPE, 3, 200, 100);
     as->spiritManager->GetSpirit("note")->Scaling(0.2);
     as->spiritManager->GetSpirit("note")->spirit->rendering = false;
     as->spiritManager->GetSpirit("pinao")->AddChild(as->spiritManager->GetSpirit("note"), "note");
+
+
+	as->spiritManager->CreateSpirit(ImgPath + "BadEighthNote.png", Enemy::EnemyName(0), MOVE_SPIRIT_TYPE, 6, 0, 0);
+	as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(0), as->spiritManager->GetSpirit(Enemy::EnemyName(0)), 4));
+	auto enemyTexture = as->spiritManager->GetSpirit(Enemy::EnemyName(0))->spirit->texture_;
+	for (int i = 1; i != 20; i++)
+	{
+		as->spiritManager->CreateSpirit(enemyTexture, Enemy::EnemyName(i), MOVE_SPIRIT_TYPE, 6, 0, 0);
+		as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(i), as->spiritManager->GetSpirit(Enemy::EnemyName(i)), 4));
+	}
 
     as->spiritManager->CreateSpirit(ImgPath + "bullet.png", Bullet::BulletName(0), MOVE_SPIRIT_TYPE, 4, 0, 0);
     as->spiritManager->GetSpirit(Bullet::BulletName(0))->Scaling(0.3);
@@ -284,6 +285,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         as->spiritManager->CreateSpirit(bulletTexture, Bullet::BulletName(i), MOVE_SPIRIT_TYPE, 4, 0, 0);
         as->spiritManager->GetSpirit(Bullet::BulletName(i))->Scaling(0.3);
         as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(i), as->spiritManager->GetSpirit(Bullet::BulletName(i)),i%2));
+    }
+
+    std::shared_ptr<Bullet> bulletPtr;
+    for (int i = 0; i != 20; i++) {
+        bulletPtr = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(i)));
+        as->enemyAndBuffetManager->AddBullet(bulletPtr);
+    }
+    std::shared_ptr<Enemy> EnemyPtr;
+    for (int i = 0; i != 20; i++) {
+        EnemyPtr = Enemy::GetPtr(as->spiritManager->GetGameObject(Enemy::EnemyName(i)));
+        as->enemyAndBuffetManager->AddEnemy(EnemyPtr);
     }
 
 	//as->spiritManager->GetSpirit("sakiko")->Scaling(0.6);

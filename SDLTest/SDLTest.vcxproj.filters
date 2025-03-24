@@ -33,6 +33,9 @@
     <ClCompile Include="SDLAudioPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="EnemyAndBuffetManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Spirit.h">
@@ -51,6 +54,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="SDLAudioPlayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyAndBuffetManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -78,6 +84,9 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resource\img\bullet.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\img\BadEighthNote.png">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

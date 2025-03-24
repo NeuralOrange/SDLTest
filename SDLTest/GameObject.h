@@ -11,7 +11,7 @@ public:
     GameObject(const std::string& name, SpiritNode* spiritNode) : name_(name), spiritNode_(spiritNode) {}
     virtual ~GameObject() = default;
 
-    virtual void Update(Uint64 time) = 0;
+    virtual bool Update(Uint64 time) = 0;
 
     const std::string& GetName() const { return name_; }
     SpiritNode* GetSpiritNode() { return spiritNode_; }
@@ -59,10 +59,10 @@ public:
 
     Player(const std::string name, SpiritNode* spiritNode) :GameObject(name, spiritNode) {}
 
-    void Update(Uint64 time) override
+    bool Update(Uint64 time) override
     {
         if (!spiritNode_->spirit->rendering)
-            return;
+            return false;
         MotionLimitations(0, 0, SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT);
         if (isAttack)
         {
@@ -84,7 +84,7 @@ public:
 
             }
         }
-
+        return true;
     }
 
     std::string Attack()
@@ -95,15 +95,15 @@ public:
             bulletCount++;
         else
             bulletCount = 0;
-        auto CenterX = spiritNode_->spirit->rect_.x + spiritNode_->spirit->rect_.w / 2;
-        shootX = CenterX;
-        shootY = spiritNode_->spirit->rect_.y - spiritNode_->children[0]->spirit->rect_.h / 2;
+        float space = 120;
+        shootX = spiritNode_->spirit->rect_.x + spiritNode_->children[0]->spirit->rect_.w / 2 +spiritNode_->spirit->rect_.w;
+        shootY = spiritNode_->spirit->rect_.y + spiritNode_->spirit->rect_.h/2;
         isAttack = true;
         SDL_FRect* rect_ = &spiritNode_->spirit->rect_;
-        auto widthUnit = SDL_WINDOW_WIDTH / 8;
-        for (int i = 1; i != 9; i++) 
+        auto widthUnit = (SDL_WINDOW_HEIGHT - space) / 6;
+        for (int i = 1; i != 7; i++) 
         {
-            if (CenterX < widthUnit * i) 
+            if (shootY < widthUnit * i + space/2) 
             {
                 return AudioName[i - 1];
             }
@@ -119,7 +119,7 @@ public:
 
 
 private:
-    std::vector<std::string> AudioName = { "C_Major", "C_Dom7", "D_Major", "E_Major", "F_Major", "G_Major", "A_Major", "B_Major" };
+    std::vector<std::string> AudioName = { "C_Major", "D_Major", "E_Major", "F_Major", "G_Major", "A_Major", "B_Major"};
     int bulletNum = 20;
 };
 
@@ -129,18 +129,19 @@ class Background :
 public:
     Background(const std::string name, SpiritNode* spiritNode) :GameObject(name, spiritNode) 
     {
-        spiritNode->movingComponent.ChangeVelocity(0, 0.1);
+        spiritNode->movingComponent.ChangeVelocity(-0.1, 0);
     }
 
-    void Update(Uint64 time) override
+    bool Update(Uint64 time) override
     {
 
         if (!spiritNode_->spirit->rendering)
-            return;
+            return false;
         auto background = spiritNode_->spirit;
-        if (background->rect_.y >  0)
-            background->rect_.y = -SDL_WINDOW_HEIGHT;
+        if (background->rect_.x < -SDL_WINDOW_WIDTH)
+            background->rect_.x = 0;
 
+        return true;
     }
 
     static std::shared_ptr<Background> GetPtr(std::shared_ptr<GameObject> background)
@@ -152,39 +153,58 @@ public:
 class Enemy : public GameObject
 {
 public:
-    Enemy(const std::string& name, SpiritNode* spiritNode, int life) : GameObject(name, spiritNode), life_(life) {}
+    bool active = false;
+    int life_;
+    float height;
+    Enemy(const std::string& name, SpiritNode* spiritNode, int life) : GameObject(name, spiritNode), life_(life) 
+    {
+        maxLife = life;
+        height = spiritNode->spirit->rect_.h;
+        spiritNode->spirit->rendering = false;
+    }
 
-    void Update(Uint64 time) override
+    bool Update(Uint64 time) override
     {
         if (!spiritNode_->spirit->rendering)
-            return;
+            return false;
         if (life_ <= 0)
         {
-            if (spiritNode_->spirit->stateNum_ == 1)
-                spiritNode_->spirit->rendering = false;
-            else
-            {
-                if (last_time == 0)
-                {
-                    spiritNode_->spirit->state_++;
-                    last_time = 1;
+            auto xPos = spiritNode_->spirit->rect_.x;
+            auto yPos = spiritNode_->spirit->rect_.y;
 
-                }
-                else if (last_time < 1000)
+            if (xPos < -spiritNode_->spirit->rect_.w)
+            {
+                spiritNode_->spirit->rendering = false;
+                return false;
+            }
+
+            if (++flashCount == flashNum) {
+                if(++spiritNode_->spirit->state_==spiritNode_->spirit->stateNum_)
                 {
-                    last_time += time;
-                }
-                else if (last_time >= 1000)
-                {
+                    spiritNode_->spirit->state_ = 0;
                     spiritNode_->spirit->rendering = false;
+                    active = false;
                 }
+                flashCount = 0;
             }
         }
+        return true;
     }
 
     void TakeDamage(int damage)
     {
-        life_ -= damage;
+       life_ -= damage;
+    }
+
+    bool GenerateEnemy(float x, float y,float xSpeed,float ySpeed)
+    {
+        active = true;
+        spiritNode_->spirit->rendering = true;
+        life_ = maxLife;
+        spiritNode_->movingComponent.ChangeVelocity(xSpeed,ySpeed);
+        spiritNode_->SetPosition(x, y);
+        return active;
+
     }
 
     static std::shared_ptr<Enemy> GetPtr(std::shared_ptr<GameObject> enemy)
@@ -192,14 +212,24 @@ public:
         return std::dynamic_pointer_cast<Enemy>(enemy);
     }
 
+    static std::string EnemyName(int i) 
+    {
+        return "enemy" + std::to_string(i);
+    }
+
+
 private:
-    int life_;
+    int maxLife;
     Uint64 last_time = 0;
+    unsigned flashCount = 0;
+    unsigned flashNum = 4;
 };
 
 class Bullet : public GameObject
 {
 public:
+    int damage_ = 4;
+
     Bullet(const std::string& name, SpiritNode* spiritNode,unsigned type = 0) : GameObject(name, spiritNode)
     {
         spiritNode->movingComponent.ChangeVelocity(0, speed);
@@ -208,31 +238,32 @@ public:
         spiritNode->spirit->state_ = type*2;
     }
 
-    void Update(Uint64 time) override
+    bool Update(Uint64 time) override
     {
         if (!spiritNode_->spirit->rendering)
-            return;
+            return false;
 
         auto xPos = spiritNode_->spirit->rect_.x;
         auto yPos = spiritNode_->spirit->rect_.y;
 
-        if (yPos < -spiritNode_->spirit->rect_.h) {
+        if (xPos < -spiritNode_->spirit->rect_.w) {
             spiritNode_->spirit->rendering = false;
-            return;
+            return false;
         }
 
 		unsigned& state = spiritNode_->spirit->state_;
-        if (flashCount++ == flashNum) {
+        if (++flashCount == flashNum) {
             if (type_ == 0)
             {
-                if (state++ == 1)
+                if (++state == 2)
                     state = 0;
             }
-            else if (state++ == 3)
+            else if (++state == 4)
                 state = 2;
             flashCount = 0;
         }
 
+        return true;
     }
 
     static std::shared_ptr<Bullet> GetPtr(std::shared_ptr<GameObject> bullet)
@@ -242,14 +273,19 @@ public:
 
     void ShootBullet(float x,float y) 
     {
-        spiritNode_->SetPosition(x-spiritNode_->spirit->rect_.w/2, y - spiritNode_->spirit->rect_.h);
-        spiritNode_->movingComponent.ChangeVelocity(0,-0.2);
+        spiritNode_->SetPosition(x, y - spiritNode_->spirit->rect_.h/2);
+        spiritNode_->movingComponent.ChangeVelocity(0.2,0);
         spiritNode_->spirit->rendering = true;
     }
 
     static std::string BulletName(int i) 
     {
         return "bullet" + std::to_string(i);
+    }
+
+    void HitTarget() 
+    {
+        spiritNode_->spirit->rendering = false;
     }
 
 private:

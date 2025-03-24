@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EnemyAndBuffetManager.cpp" />
     <ClCompile Include="SDLAudioPlayer.cpp" />
     <ClCompile Include="MovingSpirit.cpp" />
     <ClCompile Include="main.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="SpiritNode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EnemyAndBuffetManager.h" />
     <ClInclude Include="SDLAudioPlayer.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="MovingSpirit.h" />
@@ -43,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="resource\img\background.png" />
+    <Image Include="resource\img\BadEighthNote.png" />
     <Image Include="resource\img\bullet.png" />
     <Image Include="resource\img\note.png" />
     <Image Include="resource\img\pinao.png" />
