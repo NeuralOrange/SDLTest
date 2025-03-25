@@ -11,6 +11,7 @@ public:
 	
 	Spirit_Result CreateSpirit(const std::string& filename,const std::string& name,SpiritType spiritType = SPIRIT_TYPE,Uint64 stateNum = 1,float x = 0,float y = 0);
 	Spirit_Result CreateSpirit(TexturePtr texture, const std::string& name, SpiritType spiritType = SPIRIT_TYPE, Uint64 stateNum = 1, float x = 0, float y = 0);
+	Spirit_Result CreateScense(const std::string& name);
 	Spirit_Result DeleteSpirit(const std::string& name);
 	SpiritNode* GetSpirit(const std::string& name);
 	Spirit_Result DrawSpirit(const std::string& name);

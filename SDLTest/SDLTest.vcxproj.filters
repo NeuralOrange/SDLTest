@@ -59,6 +59,9 @@
     <ClInclude Include="EnemyAndBuffetManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL3.dll">
@@ -67,11 +70,6 @@
     <None Include="SDL3_image.dll">
       <Filter>资源文件</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="resource\music\dark.wav">
-      <Filter>资源文件</Filter>
-    </Media>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resource\img\pinao.png">
@@ -89,5 +87,13 @@
     <Image Include="resource\img\BadEighthNote.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="resource\img\school.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SDLTest.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

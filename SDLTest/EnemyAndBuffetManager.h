@@ -77,7 +77,7 @@ private:
 	unsigned enemyNum = 0;
 	unsigned bulletNum = 0;
 	unsigned generateCount = 0;
-	unsigned generateStepNum = 50;
+	unsigned generateStepNum = 100;
 	std::vector<float> possiableYpos;
 };
 

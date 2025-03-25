@@ -65,6 +65,7 @@ public:
 	Spirit_Result ChangePosition(float x_change, float y_change);
 	Spirit_Result SetPosition(float x, float y);
 	Spirit_Result Scaling(float scaling_ratio);
+	Spirit_Result Active(bool active);
 
 protected:
 	SurfacePtr surface_;

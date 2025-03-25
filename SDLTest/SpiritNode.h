@@ -32,13 +32,14 @@ public:
 		parent = nullptr;
 	}
 
-	Spirit_Result AddChild(SpiritNode* childNode,const std::string& name);
+	Spirit_Result AddChild(SpiritNode* childNode);
 	SpiritNode* GetChild(const std::string& name);
 	Spirit_Result DeleteChlid(const std::string& name);
 	Spirit_Result ChangePosition(float x, float y);
 	Spirit_Result SetPosition(float x, float y);
 	Spirit_Result FlashState();
 	Spirit_Result Draw();
+	Spirit_Result Active(bool active);
 	Spirit_Result Scaling(float scaling_ratio);
 
 private:

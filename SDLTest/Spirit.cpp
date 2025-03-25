@@ -48,3 +48,9 @@ Spirit_Result Spirit::Scaling(float scaling_ratio)
 	rect_.h *= scaling_ratio;
 	return Spirit_SUCCESS;
 }
+
+Spirit_Result Spirit::Active(bool active)
+{
+	rendering = active;
+	return Spirit_SUCCESS;
+}

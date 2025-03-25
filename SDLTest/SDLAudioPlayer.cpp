@@ -19,7 +19,6 @@ SDLAudioPlayer::SDLAudioPlayer(int sampleRate, int channels) {
 	device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
 	if (device == 0) {
 		std::cerr << "无法打开音频设备: " << SDL_GetError() << std::endl;
-		exit(1);
 	}
 	// 初始时暂停设备，防止数据自动播放
 	SDL_PauseAudioDevice(device);

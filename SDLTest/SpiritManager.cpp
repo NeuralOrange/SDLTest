@@ -44,6 +44,12 @@ Spirit_Result SpiritManager::CreateSpirit(TexturePtr texture, const std::string&
 	}
 }
 
+Spirit_Result SpiritManager::CreateScense(const std::string& name)
+{
+	SpiritNode spiritNode(nullptr, name);
+	return AddSpirit(spiritNode);
+}
+
 Spirit_Result SpiritManager::DeleteSpirit(const std::string& name)
 {
 	if (spirits.find(name) != spirits.end())

@@ -1,12 +1,9 @@
 #include "SpiritNode.h"
 
-Spirit_Result SpiritNode::AddChild(SpiritNode* childNode,const std::string& name)
+Spirit_Result SpiritNode::AddChild(SpiritNode* childNode)
 {
-	if (childNode->parent = spirit)
-		;
-	else
-		return Spirit_FILAURE;
-	dictionary[name] = children.size();
+	childNode->parent = spirit;
+	dictionary[childNode->name_] = children.size();
 	children.push_back(childNode);
 	return Spirit_SUCCESS;
 }
@@ -53,7 +50,11 @@ Spirit_Result SpiritNode::SetPosition(float x, float y)
 
 Spirit_Result SpiritNode::Draw()
 {
-	spirit->Draw();
+	if (spirit != nullptr) {
+		spirit->Draw();
+	}
+	else
+		return Spirit_FILAURE;
 	for (int i = 0; i != children.size(); i++)
 	{
 		children[i]->Draw();
@@ -61,8 +62,20 @@ Spirit_Result SpiritNode::Draw()
 	return Spirit_SUCCESS;
 }
 
+Spirit_Result SpiritNode::Active(bool active)
+{
+	if (spirit != nullptr)
+		spirit->Active(active);
+	for (int i = 0; i != children.size(); i++)
+	{
+		children[i]->Active(active);
+	}
+	return Spirit_SUCCESS;
+}
+
 Spirit_Result SpiritNode::Scaling(float scaling_ratio)
 {
+	if (spirit != nullptr)
 	spirit->Scaling(scaling_ratio);
 	for (int i = 0; i != children.size(); i++)
 	{
@@ -73,6 +86,7 @@ Spirit_Result SpiritNode::Scaling(float scaling_ratio)
 
 Spirit_Result SpiritNode::FlashState()
 {
+	if (spirit != nullptr)
 	spirit->FlashState();
 	for (int i = 0; i != children.size(); i++)
 	{

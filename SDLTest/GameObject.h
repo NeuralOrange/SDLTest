@@ -167,16 +167,19 @@ public:
     {
         if (!spiritNode_->spirit->rendering)
             return false;
+
+
+        if (spiritNode_->spirit->rect_.x < -spiritNode_->spirit->rect_.w)
+        {
+            spiritNode_->spirit->rendering = false;
+            active = false;
+            return false;
+        }
+
         if (life_ <= 0)
         {
             auto xPos = spiritNode_->spirit->rect_.x;
             auto yPos = spiritNode_->spirit->rect_.y;
-
-            if (xPos < -spiritNode_->spirit->rect_.w)
-            {
-                spiritNode_->spirit->rendering = false;
-                return false;
-            }
 
             if (++flashCount == flashNum) {
                 if(++spiritNode_->spirit->state_==spiritNode_->spirit->stateNum_)
@@ -292,6 +295,41 @@ private:
     Uint64 last_time = 0;
     float speed = 0.2;
     unsigned type_ = 0;
+    unsigned flashCount = 0;
+    unsigned flashNum = 4;
+};
+
+class Button : public GameObject
+{
+public:
+    Button(const std::string& name, SpiritNode* spiritNode, unsigned type = 0) : GameObject(name, spiritNode)
+    {
+
+    }
+
+    bool Update(Uint64 time) override
+    {
+        if (!spiritNode_->spirit->rendering)
+            return false;
+        return true;
+    }
+
+    static std::shared_ptr<Button> GetPtr(std::shared_ptr<GameObject> button)
+    {
+        return std::dynamic_pointer_cast<Button>(button);
+    }
+
+    bool* Holding() 
+    {
+        return &spiritNode_->spirit->rendering;
+    }
+
+    bool PointIn(SDL_FPoint* point) 
+    {
+        return SDL_PointInRectFloat(point, &spiritNode_->spirit->rect_);
+    }
+private:
+    Uint64 last_time = 0;
     unsigned flashCount = 0;
     unsigned flashNum = 4;
 };
