@@ -11,7 +11,7 @@ class GameObject
 public:
     GameObject(const std::string& name, SpiritNode* spiritNode) : name_(name), spiritNode_(spiritNode) 
     {
-        animePlay = new AnimePlay(spiritNode_->spirit, spiritNode_->spirit->stateNum_, false);
+        animePlay = new AnimePlay(spiritNode_, spiritNode_->spirit->stateNum_, false);
     }
     ~GameObject() 
     {
@@ -26,9 +26,23 @@ public:
 
     static bool CheckCollision(std::shared_ptr<GameObject> obj1,std::shared_ptr<GameObject> obj2)
     {
+        for (auto& child1 : obj1->spiritNode_->children) 
+        {
+            if (!child1->spirit->rendering)
+                continue;
+            for (auto& child2 : obj2->spiritNode_->children) 
+            {
+                if (!child2->spirit->rendering)
+                    continue;
+                const SDL_FRect& rect1 = obj1->spiritNode_->spirit->rect_;
+                const SDL_FRect& rect2 = obj2->spiritNode_->spirit->rect_;
+                if (SDL_HasRectIntersectionFloat(&rect1, &rect2))
+                    return true;
+            }
+        }
         if(!obj1->spiritNode_->spirit->rendering||!obj2->spiritNode_->spirit->rendering)
 			return false;
-        const SDL_FRect rect1 = obj1->spiritNode_->spirit->rect_;
+        const SDL_FRect& rect1 = obj1->spiritNode_->spirit->rect_;
         const SDL_FRect& rect2 = obj2->spiritNode_->spirit->rect_;
 
         return SDL_HasRectIntersectionFloat(&rect1, &rect2);
@@ -196,7 +210,7 @@ public:
     Player(const std::string name, SpiritNode* spiritNode) :GameObject(name, spiritNode) 
     {
         if (animePlay != nullptr)
-            animePlay = new AnimePlay(spiritNode->children[0]->spirit,flashTimes,false);
+            animePlay = new AnimePlay(spiritNode->children[0],flashTimes,false);
     }
 
     bool Update(Uint64 time) override
@@ -338,8 +352,7 @@ public:
 
         if (spiritNode_->spirit->rect_.x < -spiritNode_->spirit->rect_.w)
         {
-            spiritNode_->spirit->rendering = false;
-            active = false;
+            Reset();
             return false;
         }
 
@@ -349,10 +362,8 @@ public:
             auto yPos = spiritNode_->spirit->rect_.y;
             animePlay->flashStart = true;
             if (animePlay->PlayAnime())
-            {
-                spiritNode_->spirit->rendering = false;
-                active = false;
-            }
+                Reset();
+            
 
         }
         return true;
@@ -366,7 +377,7 @@ public:
     bool GenerateEnemy(float x, float y,float xSpeed,float ySpeed)
     {
         active = true;
-        spiritNode_->spirit->rendering = true;
+        spiritNode_->Active(true);
         life_ = maxLife;
         spiritNode_->movingComponent.ChangeVelocity(xSpeed,ySpeed);
         spiritNode_->SetPosition(x, y);
@@ -384,6 +395,13 @@ public:
         return "enemy" + std::to_string(i);
     }
 
+    void Reset() 
+    {
+        spiritNode_->Active(false);
+        spiritNode_->ClearChild();
+        active = false;
+        animePlay->Reset();
+    }
 
 private:
     int maxLife;

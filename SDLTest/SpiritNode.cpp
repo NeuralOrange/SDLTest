@@ -84,6 +84,23 @@ Spirit_Result SpiritNode::Scaling(float scaling_ratio)
 	return Spirit_SUCCESS;
 }
 
+Spirit_Result SpiritNode::ChangeState(unsigned state)
+{
+	if (spirit != nullptr)
+		spirit->state_ = state;
+	for (int i = 0; i != children.size(); i++)
+	{
+		children[i]->ChangeState(state);
+	}
+	return Spirit_SUCCESS;
+}
+
+Spirit_Result SpiritNode::ClearChild()
+{
+	children.clear();
+	return Spirit_SUCCESS;
+}
+
 Spirit_Result SpiritNode::FlashState()
 {
 	if (spirit != nullptr)

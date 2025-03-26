@@ -41,7 +41,8 @@ public:
 	Spirit_Result Draw();
 	Spirit_Result Active(bool active);
 	Spirit_Result Scaling(float scaling_ratio);
-
+	Spirit_Result ChangeState(unsigned state);
+	Spirit_Result ClearChild();
 private:
 
 };

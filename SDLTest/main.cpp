@@ -299,6 +299,20 @@ SDL_AppResult SpiritManagerInit(AppState* as)
 
     }
 
+    as->spiritManager->CreateSpirit(ImgPath + "BadFlat.png", "Flat"+std::to_string(0), MOVE_SPIRIT_TYPE, 6, 0, 0);
+    enemyTexture = as->spiritManager->GetSpirit("Flat"+std::to_string(0))->spirit->texture_;
+    for (int i = 1; i != 10; i++)
+    {
+        as->spiritManager->CreateSpirit(enemyTexture, "Flat"+std::to_string(i), MOVE_SPIRIT_TYPE, 6, 0, 0);
+    }
+
+    as->spiritManager->CreateSpirit(ImgPath + "BadSharp.png", "Sharp" + std::to_string(0), MOVE_SPIRIT_TYPE, 6, 0, 0);
+    enemyTexture = as->spiritManager->GetSpirit("Sharp" + std::to_string(0))->spirit->texture_;
+    for (int i = 1; i != 10; i++)
+    {
+        as->spiritManager->CreateSpirit(enemyTexture, "Sharp" + std::to_string(i), MOVE_SPIRIT_TYPE, 6, 0, 0);
+    }
+
     GameScense->Active(false);
 
     std::shared_ptr<Bullet> bulletPtr;
@@ -315,8 +329,12 @@ SDL_AppResult SpiritManagerInit(AppState* as)
         EnemyPtr = Enemy::GetPtr(as->spiritManager->GetGameObject(Enemy::EnemyName(i)));
         as->enemyAndBuffetManager->AddEnemy(EnemyPtr);
     }
-
-
+    for (int i = 0; i != 10; i++) 
+    {
+        as->enemyAndBuffetManager->AddComponent(as->spiritManager->GetSpirit("Sharp" + std::to_string(i)), EnemyAndBuffetManager::Sharp);
+        as->enemyAndBuffetManager->AddComponent(as->spiritManager->GetSpirit("Flat" + std::to_string(i)), EnemyAndBuffetManager::Flat);
+    }
+   
     return SDL_APP_SUCCESS;
 }
 
