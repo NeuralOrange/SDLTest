@@ -36,6 +36,9 @@
     <ClCompile Include="EnemyAndBuffetManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AnimePlay.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Spirit.h">
@@ -60,6 +63,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimePlay.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -88,6 +94,12 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resource\img\school.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\img\EighthRest.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\img\SixteenthRest.png">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

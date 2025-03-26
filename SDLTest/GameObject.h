@@ -1,5 +1,6 @@
 #pragma once
 #include "SpiritManager.h"
+#include "AnimePlay.h"
 
 #define STEP_RATE_IN_MILLISECONDS  10
 #define SDL_WINDOW_WIDTH           1024
@@ -8,8 +9,15 @@
 class GameObject
 {
 public:
-    GameObject(const std::string& name, SpiritNode* spiritNode) : name_(name), spiritNode_(spiritNode) {}
-    virtual ~GameObject() = default;
+    GameObject(const std::string& name, SpiritNode* spiritNode) : name_(name), spiritNode_(spiritNode) 
+    {
+        animePlay = new AnimePlay(spiritNode_->spirit, spiritNode_->spirit->stateNum_, false);
+    }
+    ~GameObject() 
+    {
+        if (animePlay != nullptr)
+            free(animePlay);
+    }
 
     virtual bool Update(Uint64 time) = 0;
 
@@ -44,7 +52,134 @@ public:
 protected:
     std::string name_;
     SpiritNode* spiritNode_;
+    AnimePlay* animePlay;
 };
+
+
+class Bullet : public GameObject
+{
+public:
+    typedef enum BulletType
+    {
+        NONEBULLET,
+        EigthRest,
+        SixteenthRest
+    }BulletType;
+
+    int damage_ = 4;
+    bool active = false;
+
+    Bullet(const std::string& name, SpiritNode* spiritNode, BulletType bulletType = EigthRest) : GameObject(name, spiritNode)
+    {
+        spiritNode->movingComponent.ChangeVelocity(0, speed);
+        spiritNode->spirit->rendering = false;
+        type_ = bulletType;
+        animePlay->isLoop = true;
+        animePlay->flashNum = 4;
+    }
+
+    bool Update(Uint64 time) override
+    {
+        if (!spiritNode_->spirit->rendering)
+            return false;
+
+        auto xPos = spiritNode_->spirit->rect_.x;
+        auto yPos = spiritNode_->spirit->rect_.y;
+
+        if (xPos < -spiritNode_->spirit->rect_.w) {
+            animePlay->Reset();
+            spiritNode_->spirit->rendering = false;
+            active = false;
+            return false;
+        }
+
+        /*	unsigned& state = spiritNode_->spirit->state_;
+            if (++flashCount == flashNum) {
+                if (type_ == 0)
+                {
+                    if (++state == 2)
+                        state = 0;
+                }
+                else if (++state == 4)
+                    state = 2;
+                flashCount = 0;
+            }*/
+        animePlay->PlayAnime();
+
+        return true;
+    }
+
+    static std::shared_ptr<Bullet> GetPtr(std::shared_ptr<GameObject> bullet)
+    {
+        return std::dynamic_pointer_cast<Bullet>(bullet);
+    }
+
+    void ShootBullet(float x, float y)
+    {
+        active = true;
+        spiritNode_->SetPosition(x, y - spiritNode_->spirit->rect_.h / 2);
+        spiritNode_->movingComponent.ChangeVelocity(0.2, 0);
+        spiritNode_->spirit->rendering = true;
+        animePlay->flashStart = true;
+    }
+
+    static std::string BulletName(int i)
+    {
+        return "bullet" + std::to_string(i);
+    }
+
+    void HitTarget()
+    {
+        spiritNode_->spirit->rendering = false;
+        active = false;
+        animePlay->Reset();
+    }
+
+
+private:
+    Uint64 last_time = 0;
+    float speed = 0.2;
+    BulletType type_;
+    unsigned flashCount = 0;
+    unsigned flashNum = 4;
+};
+
+class Button : public GameObject
+{
+public:
+    bool isHolding = false;
+    Button(const std::string& name, SpiritNode* spiritNode, unsigned type = 0) : GameObject(name, spiritNode)
+    {
+
+    }
+
+    bool Update(Uint64 time) override
+    {
+        if (!spiritNode_->spirit->rendering)
+            return false;
+        return true;
+    }
+
+    static std::shared_ptr<Button> GetPtr(std::shared_ptr<GameObject> button)
+    {
+        return std::dynamic_pointer_cast<Button>(button);
+    }
+
+    void Holding(unsigned state)
+    {
+        spiritNode_->spirit->state_ = state;
+        isHolding = state;
+    }
+
+    bool PointIn(float x, float y)
+    {
+        SDL_FPoint point{ x,y };
+        return SDL_PointInRectFloat(&point, &spiritNode_->spirit->rect_);
+    }
+private:
+    Uint64 last_time = 0;
+};
+
 
 
 class Player :
@@ -52,53 +187,69 @@ class Player :
 {
 public:
 
-    bool isAttack = false;
     int bulletCount = -1;
     float shootX = 0;
     float shootY = 0;
+    unsigned staminaTime = 0;
+    bool staminaStart = false;
 
-    Player(const std::string name, SpiritNode* spiritNode) :GameObject(name, spiritNode) {}
+
+    Player(const std::string name, SpiritNode* spiritNode) :GameObject(name, spiritNode) 
+    {
+        if (animePlay != nullptr)
+            animePlay = new AnimePlay(spiritNode->children[0]->spirit,flashTimes,false);
+    }
 
     bool Update(Uint64 time) override
     {
         if (!spiritNode_->spirit->rendering)
             return false;
         MotionLimitations(0, 0, SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT);
-        if (isAttack)
+        auto& attackEffect = spiritNode_->children[0]->spirit;
+        if (staminaStart)
         {
-            auto& attackEffect = spiritNode_->children[0]->spirit;
-            if (!attackEffect->rendering)
+            if (!attackEffect->rendering) 
             {
+                animePlay->flashStart = true;
                 attackEffect->rendering = true;
             }
-            else
+            else 
             {
-                if (attackEffect->state_ == attackEffect->stateNum_ - 1)
+                if (animePlay->PlayAnime(2)) 
                 {
-                    attackEffect->rendering = false;
-                    attackEffect->state_ = 0;
-                    isAttack = false;
+                    
                 }
-                else
-                    attackEffect->FlashState();
-
+                else 
+                {
+                    staminaTime++;
+                }
             }
+        }
+        else 
+        {
+            attackEffect->rendering = false;
+            
         }
         return true;
     }
 
     std::string Attack()
     {
-        if (isAttack)
+        if (staminaTime < flashTimes) 
+        {
+            staminaStart = false;
+            animePlay->Reset();
             return "too fast";
-        if (bulletCount < bulletNum-1)
+        }
+        if (bulletCount < bulletNum - 1)
             bulletCount++;
         else
             bulletCount = 0;
         float space = 120;
-        shootX = spiritNode_->spirit->rect_.x + spiritNode_->children[0]->spirit->rect_.w / 2 +spiritNode_->spirit->rect_.w;
+        shootX = spiritNode_->spirit->rect_.x + spiritNode_->children[0]->spirit->rect_.w +spiritNode_->spirit->rect_.w;
         shootY = spiritNode_->spirit->rect_.y + spiritNode_->spirit->rect_.h/2;
-        isAttack = true;
+        staminaStart = false;
+        animePlay->Reset();
         SDL_FRect* rect_ = &spiritNode_->spirit->rect_;
         auto widthUnit = (SDL_WINDOW_HEIGHT - space) / 6;
         for (int i = 1; i != 7; i++) 
@@ -118,9 +269,21 @@ public:
     }
 
 
+    Bullet::BulletType GetBulletType()
+    {
+        if (staminaTime < flashTimes)
+            return Bullet::NONEBULLET;
+        else if (staminaTime < flashTimes)
+            return Bullet::SixteenthRest;
+        else
+            return Bullet::EigthRest;
+
+    }
+
 private:
     std::vector<std::string> AudioName = { "C_Major", "D_Major", "E_Major", "F_Major", "G_Major", "A_Major", "B_Major"};
     int bulletNum = 20;
+    unsigned flashTimes = 20;
 };
 
 class Background :
@@ -161,6 +324,7 @@ public:
         maxLife = life;
         height = spiritNode->spirit->rect_.h;
         spiritNode->spirit->rendering = false;
+        animePlay->flashNum = 4;
     }
 
     bool Update(Uint64 time) override
@@ -180,16 +344,13 @@ public:
         {
             auto xPos = spiritNode_->spirit->rect_.x;
             auto yPos = spiritNode_->spirit->rect_.y;
-
-            if (++flashCount == flashNum) {
-                if(++spiritNode_->spirit->state_==spiritNode_->spirit->stateNum_)
-                {
-                    spiritNode_->spirit->state_ = 0;
-                    spiritNode_->spirit->rendering = false;
-                    active = false;
-                }
-                flashCount = 0;
+            animePlay->flashStart = true;
+            if (animePlay->PlayAnime())
+            {
+                spiritNode_->spirit->rendering = false;
+                active = false;
             }
+
         }
         return true;
     }
@@ -224,112 +385,5 @@ public:
 private:
     int maxLife;
     Uint64 last_time = 0;
-    unsigned flashCount = 0;
-    unsigned flashNum = 4;
 };
 
-class Bullet : public GameObject
-{
-public:
-    int damage_ = 4;
-
-    Bullet(const std::string& name, SpiritNode* spiritNode,unsigned type = 0) : GameObject(name, spiritNode)
-    {
-        spiritNode->movingComponent.ChangeVelocity(0, speed);
-        spiritNode->spirit->rendering = false;
-        type_ = type;
-        spiritNode->spirit->state_ = type*2;
-    }
-
-    bool Update(Uint64 time) override
-    {
-        if (!spiritNode_->spirit->rendering)
-            return false;
-
-        auto xPos = spiritNode_->spirit->rect_.x;
-        auto yPos = spiritNode_->spirit->rect_.y;
-
-        if (xPos < -spiritNode_->spirit->rect_.w) {
-            spiritNode_->spirit->rendering = false;
-            return false;
-        }
-
-		unsigned& state = spiritNode_->spirit->state_;
-        if (++flashCount == flashNum) {
-            if (type_ == 0)
-            {
-                if (++state == 2)
-                    state = 0;
-            }
-            else if (++state == 4)
-                state = 2;
-            flashCount = 0;
-        }
-
-        return true;
-    }
-
-    static std::shared_ptr<Bullet> GetPtr(std::shared_ptr<GameObject> bullet)
-    {
-        return std::dynamic_pointer_cast<Bullet>(bullet);
-    }
-
-    void ShootBullet(float x,float y) 
-    {
-        spiritNode_->SetPosition(x, y - spiritNode_->spirit->rect_.h/2);
-        spiritNode_->movingComponent.ChangeVelocity(0.2,0);
-        spiritNode_->spirit->rendering = true;
-    }
-
-    static std::string BulletName(int i) 
-    {
-        return "bullet" + std::to_string(i);
-    }
-
-    void HitTarget() 
-    {
-        spiritNode_->spirit->rendering = false;
-    }
-
-private:
-    Uint64 last_time = 0;
-    float speed = 0.2;
-    unsigned type_ = 0;
-    unsigned flashCount = 0;
-    unsigned flashNum = 4;
-};
-
-class Button : public GameObject
-{
-public:
-    Button(const std::string& name, SpiritNode* spiritNode, unsigned type = 0) : GameObject(name, spiritNode)
-    {
-
-    }
-
-    bool Update(Uint64 time) override
-    {
-        if (!spiritNode_->spirit->rendering)
-            return false;
-        return true;
-    }
-
-    static std::shared_ptr<Button> GetPtr(std::shared_ptr<GameObject> button)
-    {
-        return std::dynamic_pointer_cast<Button>(button);
-    }
-
-    bool* Holding() 
-    {
-        return &spiritNode_->spirit->rendering;
-    }
-
-    bool PointIn(SDL_FPoint* point) 
-    {
-        return SDL_PointInRectFloat(point, &spiritNode_->spirit->rect_);
-    }
-private:
-    Uint64 last_time = 0;
-    unsigned flashCount = 0;
-    unsigned flashNum = 4;
-};

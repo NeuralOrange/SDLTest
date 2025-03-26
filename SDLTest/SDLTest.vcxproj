@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimePlay.cpp" />
     <ClCompile Include="EnemyAndBuffetManager.cpp" />
     <ClCompile Include="SDLAudioPlayer.cpp" />
     <ClCompile Include="MovingSpirit.cpp" />
@@ -28,6 +29,7 @@
     <ClCompile Include="SpiritNode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimePlay.h" />
     <ClInclude Include="EnemyAndBuffetManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SDLAudioPlayer.h" />
@@ -45,9 +47,11 @@
     <Image Include="resource\img\background.png" />
     <Image Include="resource\img\BadEighthNote.png" />
     <Image Include="resource\img\bullet.png" />
+    <Image Include="resource\img\EighthRest.png" />
     <Image Include="resource\img\note.png" />
     <Image Include="resource\img\pinao.png" />
     <Image Include="resource\img\school.png" />
+    <Image Include="resource\img\SixteenthRest.png" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SDLTest.rc" />

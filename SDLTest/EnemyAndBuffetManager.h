@@ -9,7 +9,8 @@ public:
 	{
 		for (int i = 2; i != 37; i++) 
 		{
-			possiableYpos.push_back(i*18+60);
+			if(i!=13&&i!=25)
+				possiableYpos.push_back(i*18+60);
 		}
 	}
 
@@ -71,9 +72,40 @@ public:
 		}
 		std::cerr << "敌人对象不足 " << SDL_GetError() << std::endl;
 	}
+
+	void GenerateBullet(float x, float y, Bullet::BulletType bulletType)
+	{
+		std::vector<std::shared_ptr<Bullet>>* bullets;
+		switch (bulletType)
+		{
+		case Bullet::NONEBULLET:
+			return;
+			break;
+		case Bullet::EigthRest:
+			bullets = &EigthRestBullets;
+			break;
+		case Bullet::SixteenthRest:
+			bullets = &SixteenthBullets;
+			break;
+		default:
+			return;
+			break;
+		}
+		for (int i = 0; i != bullets->size(); i++)
+		{
+			if (!(*bullets)[i]->active)
+			{
+				int r = SDL_rand(possiableYpos.size());
+				(*bullets)[i]->ShootBullet(x, y);
+				return;
+			}
+		}
+	}
 private:
 	std::vector<std::shared_ptr<Enemy>> Enemys;
 	std::vector<std::shared_ptr<Bullet>> Bullets;
+	std::vector<std::shared_ptr<Bullet>> EigthRestBullets;
+	std::vector<std::shared_ptr<Bullet>> SixteenthBullets;
 	unsigned enemyNum = 0;
 	unsigned bulletNum = 0;
 	unsigned generateCount = 0;

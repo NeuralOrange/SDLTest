@@ -49,8 +49,6 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
 	AppState* as = (AppState*)appstate;
 	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
     std::shared_ptr<Player> PlayerPtr = Player::GetPtr(as->spiritManager->GetGameObject(name));
-    std::shared_ptr<Bullet> bullet;
-    std::string attckResult;
     if (as->gameState == GAME_MENU) 
     {
         switch (key_code) {
@@ -61,6 +59,7 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
         case SDL_SCANCODE_SPACE:
             as->spiritManager->GetSpirit("menuScense")->Active(false);
             as->spiritManager->GetSpirit("gameScense")->Active(true);
+            as->spiritManager->GetSpirit("note")->Active(false);
             as->gameState = GAME_START;
             break;
         default:
@@ -82,12 +81,11 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
             //as->enemyAndBuffetManager->GenerateEnemy(1024,60+36*4-116,-0.1,0);
             break;
         case SDL_SCANCODE_SPACE:
-            attckResult = PlayerPtr->Attack();
-            as->audioPlayer->Play(attckResult);
-            bullet = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(PlayerPtr->bulletCount)));
-            if (attckResult != "too fast")
-                bullet->ShootBullet(PlayerPtr->shootX, PlayerPtr->shootY);
-            //as->audioPlayer1->GenerateSineWave(SDLAudioPlayer::PianoKeyFrequency(30),1050);
+            if (!PlayerPtr->staminaStart) 
+            {
+                PlayerPtr->staminaStart = true;
+                PlayerPtr->staminaTime = 0;
+            }
             break;
         case SDL_SCANCODE_P:
             break;
@@ -116,10 +114,22 @@ static SDL_AppResult handle_key_up_event_(void* appstate, const std::string& nam
 {
 	AppState* as = (AppState*)appstate;
 	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
+    std::shared_ptr<Player> PlayerPtr = Player::GetPtr(as->spiritManager->GetGameObject(name));
+    std::shared_ptr<Bullet> bullet;
+    std::string attckResult;
 	if (conSpir == nullptr || !conSpir->enableMovingComponent)
 		return SDL_APP_CONTINUE;
     const bool* state = SDL_GetKeyboardState(NULL);
     switch (key_code) {
+    case SDL_SCANCODE_SPACE:
+
+        attckResult = PlayerPtr->Attack();
+        as->audioPlayer->Play(attckResult);
+        bullet = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(PlayerPtr->bulletCount)));
+        if (attckResult != "too fast")
+            bullet->ShootBullet(PlayerPtr->shootX, PlayerPtr->shootY);
+        PlayerPtr->staminaStart = false;
+        break;
     case SDL_SCANCODE_RIGHT:
     case SDL_SCANCODE_LEFT:
         if (!state[SDL_SCANCODE_RIGHT]&&!state[SDL_SCANCODE_LEFT])
@@ -140,9 +150,34 @@ static SDL_AppResult handle_key_up_event_(void* appstate, const std::string& nam
     return SDL_APP_CONTINUE;
 }
 
-static SDL_AppResult handle_mouse_motton_event_(void* appstate, const std::string& name, SDL_Scancode key_code) 
+static SDL_AppResult handle_mouse_motion_event_(void* appstate, const std::string& name, SDL_Event* event) 
 {
+    AppState* as = (AppState*)appstate;
+    std::shared_ptr<Button> button = Button::GetPtr(as->spiritManager->GetGameObject(name));
+    if (as->gameState == GAME_START)
+        return SDL_APP_CONTINUE;
+    if (button->PointIn(event->motion.x, event->motion.y))
+        button->Holding(1);
+    else
+        button->Holding(0);
+    return SDL_APP_CONTINUE;
 
+}
+
+static SDL_AppResult handle_mouse_down_event(void* appstate, const std::string& name, SDL_Event* event)
+{
+    AppState* as = (AppState*)appstate;
+    std::shared_ptr<Button> button = Button::GetPtr(as->spiritManager->GetGameObject(name));
+    if (as->gameState == GAME_START)
+        return SDL_APP_CONTINUE;
+    if (button->isHolding) 
+    {
+         as->spiritManager->GetSpirit("menuScense")->Active(false);
+            as->spiritManager->GetSpirit("gameScense")->Active(true);
+            as->spiritManager->GetSpirit("note")->Active(false);
+            as->gameState = GAME_START;
+    }
+    return SDL_APP_CONTINUE;
 }
 
 /// <summary>
@@ -210,10 +245,6 @@ SDL_AppResult SpiritManagerInit(AppState* as)
     as->spiritManager = new SpiritManager(as->renderer);
     as->enemyAndBuffetManager = new EnemyAndBuffetManager();
 
-    as->spiritManager = new SpiritManager(as->renderer);
-
-    as->enemyAndBuffetManager = new EnemyAndBuffetManager();
-
     as->spiritManager->CreateScense("menuScense");
     auto MenuScense = as->spiritManager->GetSpirit("menuScense");
     as->spiritManager->CreateSpirit(ImgPath + "school.png", "school", SPIRIT_TYPE, 1, 0, 0);
@@ -233,13 +264,15 @@ SDL_AppResult SpiritManagerInit(AppState* as)
 
     as->spiritManager->CreateSpirit(ImgPath + "pinao.png", "pinao", MOVE_SPIRIT_TYPE, 1, 100, 100);
     as->spiritManager->GetSpirit("pinao")->Scaling(0.2);
-    as->spiritManager->AddGameObject(std::make_shared<Player>("pinao", as->spiritManager->GetSpirit("pinao")));
-    GameScense->AddChild(as->spiritManager->GetSpirit("pinao"));
+
 
     as->spiritManager->CreateSpirit(ImgPath + "note.png", "note", SPIRIT_TYPE, 3, 200, 100);
     as->spiritManager->GetSpirit("note")->Scaling(0.2);
     as->spiritManager->GetSpirit("note")->spirit->rendering = false;
     as->spiritManager->GetSpirit("pinao")->AddChild(as->spiritManager->GetSpirit("note"));
+
+    as->spiritManager->AddGameObject(std::make_shared<Player>("pinao", as->spiritManager->GetSpirit("pinao")));
+    GameScense->AddChild(as->spiritManager->GetSpirit("pinao"));
 
     as->spiritManager->CreateSpirit(ImgPath + "BadEighthNote.png", Enemy::EnemyName(0), MOVE_SPIRIT_TYPE, 6, 0, 0);
     as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(0), as->spiritManager->GetSpirit(Enemy::EnemyName(0)), 4));
@@ -259,7 +292,7 @@ SDL_AppResult SpiritManagerInit(AppState* as)
     {
         as->spiritManager->CreateSpirit(bulletTexture, Bullet::BulletName(i), MOVE_SPIRIT_TYPE, 4, 0, 0);
         as->spiritManager->GetSpirit(Bullet::BulletName(i))->Scaling(0.3);
-        as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(i), as->spiritManager->GetSpirit(Bullet::BulletName(i)), i % 2));
+        as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(i), as->spiritManager->GetSpirit(Bullet::BulletName(i))));
  
     }
 
@@ -338,10 +371,12 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
         return handle_key_down_event_(appstate,"pinao", event->key.scancode);
     case SDL_EVENT_KEY_UP:
         return handle_key_up_event_(appstate,"pinao", event->key.scancode);
+    case SDL_EVENT_MOUSE_MOTION:
+        return handle_mouse_motion_event_(appstate, "startButton", event);
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        return SDL_APP_SUCCESS;
+        return handle_mouse_down_event(appstate, "startButton", event);
     case SDL_EVENT_MOUSE_BUTTON_UP:
-        return SDL_APP_SUCCESS;
+        return SDL_APP_CONTINUE;
     default:
         break;
     }
@@ -358,6 +393,10 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
     if (appstate != NULL) {
         AppState* as = (AppState*)appstate;
+        if(as->spiritManager!=NULL)
+            free(as->spiritManager);
+        if (as->enemyAndBuffetManager != NULL)
+            free(as->enemyAndBuffetManager);
         SDL_DestroyRenderer(as->renderer);
         SDL_DestroyWindow(as->window);
         SDL_free(as);
