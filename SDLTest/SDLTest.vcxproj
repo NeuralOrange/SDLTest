@@ -46,6 +46,8 @@
   <ItemGroup>
     <Image Include="resource\img\background.png" />
     <Image Include="resource\img\BadEighthNote.png" />
+    <Image Include="resource\img\BadFlat.png" />
+    <Image Include="resource\img\BadSharp.png" />
     <Image Include="resource\img\bullet.png" />
     <Image Include="resource\img\EighthRest.png" />
     <Image Include="resource\img\note.png" />

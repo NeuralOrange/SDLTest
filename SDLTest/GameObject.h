@@ -62,20 +62,20 @@ public:
     typedef enum BulletType
     {
         NONEBULLET,
-        EigthRest,
+        EighthRest,
         SixteenthRest
     }BulletType;
 
     int damage_ = 4;
     bool active = false;
 
-    Bullet(const std::string& name, SpiritNode* spiritNode, BulletType bulletType = EigthRest) : GameObject(name, spiritNode)
+    Bullet(const std::string& name, SpiritNode* spiritNode, BulletType bulletType = EighthRest) : GameObject(name, spiritNode)
     {
         spiritNode->movingComponent.ChangeVelocity(0, speed);
         spiritNode->spirit->rendering = false;
         type_ = bulletType;
         animePlay->isLoop = true;
-        animePlay->flashNum = 4;
+        animePlay->flashNum = 10;
     }
 
     bool Update(Uint64 time) override
@@ -86,24 +86,12 @@ public:
         auto xPos = spiritNode_->spirit->rect_.x;
         auto yPos = spiritNode_->spirit->rect_.y;
 
-        if (xPos < -spiritNode_->spirit->rect_.w) {
+        if (xPos > SDL_WINDOW_WIDTH) {
             animePlay->Reset();
             spiritNode_->spirit->rendering = false;
             active = false;
             return false;
         }
-
-        /*	unsigned& state = spiritNode_->spirit->state_;
-            if (++flashCount == flashNum) {
-                if (type_ == 0)
-                {
-                    if (++state == 2)
-                        state = 0;
-                }
-                else if (++state == 4)
-                    state = 2;
-                flashCount = 0;
-            }*/
         animePlay->PlayAnime();
 
         return true;
@@ -123,9 +111,21 @@ public:
         animePlay->flashStart = true;
     }
 
-    static std::string BulletName(int i)
+    static std::string BulletName(int i,BulletType bulletType)
     {
-        return "bullet" + std::to_string(i);
+        std::string bulletName;
+        switch (bulletType)
+        {
+        case Bullet::EighthRest:
+            bulletName = "EighthRest";
+            break;
+        case Bullet::SixteenthRest:
+            bulletName = "SixteenthRest";
+            break;
+        default:
+            break;
+        }
+        return bulletName + std::to_string(i);
     }
 
     void HitTarget()
@@ -187,7 +187,6 @@ class Player :
 {
 public:
 
-    int bulletCount = -1;
     float shootX = 0;
     float shootY = 0;
     unsigned staminaTime = 0;
@@ -241,10 +240,6 @@ public:
             animePlay->Reset();
             return "too fast";
         }
-        if (bulletCount < bulletNum - 1)
-            bulletCount++;
-        else
-            bulletCount = 0;
         float space = 120;
         shootX = spiritNode_->spirit->rect_.x + spiritNode_->children[0]->spirit->rect_.w +spiritNode_->spirit->rect_.w;
         shootY = spiritNode_->spirit->rect_.y + spiritNode_->spirit->rect_.h/2;
@@ -273,17 +268,16 @@ public:
     {
         if (staminaTime < flashTimes)
             return Bullet::NONEBULLET;
-        else if (staminaTime < flashTimes)
+        else if (staminaTime < flashTimes*2)
             return Bullet::SixteenthRest;
         else
-            return Bullet::EigthRest;
+            return Bullet::EighthRest;
 
     }
 
 private:
     std::vector<std::string> AudioName = { "C_Major", "D_Major", "E_Major", "F_Major", "G_Major", "A_Major", "B_Major"};
-    int bulletNum = 20;
-    unsigned flashTimes = 20;
+    unsigned flashTimes = 25;
 };
 
 class Background :
@@ -316,9 +310,18 @@ public:
 class Enemy : public GameObject
 {
 public:
+    enum EnemyType {
+        isSharp = 1 << 0,
+        isFlat = 1<<1,
+        isEighth = 1<<2,
+        isSixteenth =1<<3,
+        isFriend = 1<<4,
+        isEnemy = 1<<5
+    };
     bool active = false;
     int life_;
     float height;
+    int type = isEighth | isEnemy;
     Enemy(const std::string& name, SpiritNode* spiritNode, int life) : GameObject(name, spiritNode), life_(life) 
     {
         maxLife = life;

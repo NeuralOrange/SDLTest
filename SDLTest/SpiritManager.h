@@ -28,6 +28,7 @@ public:
 
 private:
 	RendererPtr renderer_;
+	std::vector<SpiritNode> RenderList;
 	std::map<std::string, SpiritNode> spirits;
 	std::map<std::string, std::shared_ptr<GameObject>> gameObjects_;
 	Spirit_Result AddSpirit(SpiritNode& spiritNode);

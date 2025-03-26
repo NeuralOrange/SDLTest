@@ -125,9 +125,8 @@ static SDL_AppResult handle_key_up_event_(void* appstate, const std::string& nam
 
         attckResult = PlayerPtr->Attack();
         as->audioPlayer->Play(attckResult);
-        bullet = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(PlayerPtr->bulletCount)));
         if (attckResult != "too fast")
-            bullet->ShootBullet(PlayerPtr->shootX, PlayerPtr->shootY);
+            as->enemyAndBuffetManager->GenerateBullet(PlayerPtr->shootX,PlayerPtr->shootY,PlayerPtr->GetBulletType());
         PlayerPtr->staminaStart = false;
         break;
     case SDL_SCANCODE_RIGHT:
@@ -213,10 +212,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
     //Í¼ÏñäÖÈ¾
 	as->spiritManager->DrawAll();
-
-
-
-
     SDL_RenderPresent(as->renderer);
     return SDL_APP_CONTINUE;
 }
@@ -284,24 +279,36 @@ SDL_AppResult SpiritManagerInit(AppState* as)
         as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(i), as->spiritManager->GetSpirit(Enemy::EnemyName(i)), 4));
     }
 
-    as->spiritManager->CreateSpirit(ImgPath + "bullet.png", Bullet::BulletName(0), MOVE_SPIRIT_TYPE, 4, 0, 0);
-    as->spiritManager->GetSpirit(Bullet::BulletName(0))->Scaling(0.3);
-    as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(0), as->spiritManager->GetSpirit(Bullet::BulletName(0))));
-    auto bulletTexture = as->spiritManager->GetSpirit(Bullet::BulletName(0))->spirit->texture_;
+    as->spiritManager->CreateSpirit(ImgPath + "EighthRest.png", Bullet::BulletName(0, Bullet::EighthRest), MOVE_SPIRIT_TYPE, 4, 0, 0);
+    as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(0, Bullet::EighthRest), as->spiritManager->GetSpirit(Bullet::BulletName(0, Bullet::EighthRest))));
+    auto bulletTexture = as->spiritManager->GetSpirit(Bullet::BulletName(0, Bullet::EighthRest))->spirit->texture_;
     for (int i = 1; i != 20; i++)
     {
-        as->spiritManager->CreateSpirit(bulletTexture, Bullet::BulletName(i), MOVE_SPIRIT_TYPE, 4, 0, 0);
-        as->spiritManager->GetSpirit(Bullet::BulletName(i))->Scaling(0.3);
-        as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(i), as->spiritManager->GetSpirit(Bullet::BulletName(i))));
+        as->spiritManager->CreateSpirit(bulletTexture, Bullet::BulletName(i, Bullet::EighthRest), MOVE_SPIRIT_TYPE, 4, 0, 0);
+        as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(i, Bullet::EighthRest), as->spiritManager->GetSpirit(Bullet::BulletName(i, Bullet::EighthRest))));
  
+    }
+
+    as->spiritManager->CreateSpirit(ImgPath + "SixteenthRest.png", Bullet::BulletName(0, Bullet::SixteenthRest), MOVE_SPIRIT_TYPE, 4, 0, 0);
+    as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(0, Bullet::SixteenthRest), as->spiritManager->GetSpirit(Bullet::BulletName(0, Bullet::SixteenthRest))));
+    bulletTexture = as->spiritManager->GetSpirit(Bullet::BulletName(0, Bullet::SixteenthRest))->spirit->texture_;
+    for (int i = 1; i != 20; i++)
+    {
+        as->spiritManager->CreateSpirit(bulletTexture, Bullet::BulletName(i, Bullet::SixteenthRest), MOVE_SPIRIT_TYPE, 4, 0, 0);
+        as->spiritManager->AddGameObject(std::make_shared<Bullet>(Bullet::BulletName(i, Bullet::SixteenthRest), as->spiritManager->GetSpirit(Bullet::BulletName(i, Bullet::SixteenthRest))));
+
     }
 
     GameScense->Active(false);
 
     std::shared_ptr<Bullet> bulletPtr;
     for (int i = 0; i != 20; i++) {
-        bulletPtr = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(i)));
-        as->enemyAndBuffetManager->AddBullet(bulletPtr);
+        bulletPtr = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(i, Bullet::EighthRest)));
+        as->enemyAndBuffetManager->AddBullet(bulletPtr, Bullet::EighthRest);
+    }
+    for (int i = 0; i != 20; i++) {
+        bulletPtr = Bullet::GetPtr(as->spiritManager->GetGameObject(Bullet::BulletName(i, Bullet::SixteenthRest)));
+        as->enemyAndBuffetManager->AddBullet(bulletPtr, Bullet::SixteenthRest);
     }
     std::shared_ptr<Enemy> EnemyPtr;
     for (int i = 0; i != 20; i++) {

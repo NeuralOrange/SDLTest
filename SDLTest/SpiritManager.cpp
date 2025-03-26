@@ -89,10 +89,10 @@ Spirit_Result SpiritManager::FlashSpirit(const std::string& name)
 
 Spirit_Result SpiritManager::DrawAll()
 {
-	for (auto& spirit : spirits)
+	for (auto& spirit : RenderList)
 	{
-		if(spirit.second.parent==nullptr)
-		spirit.second.Draw();
+		if(spirit.parent==nullptr)
+		spirit.Draw();
 	}
 	return Spirit_SUCCESS;
 }
@@ -150,6 +150,7 @@ Spirit_Result SpiritManager::AddSpirit(SpiritNode& spiritNode)
 	if (spirits.find(spiritNode.name_) == spirits.end())
 	{
 		spirits[spiritNode.name_] = spiritNode;
+		RenderList.push_back(spiritNode);
 		return Spirit_SUCCESS;
 	}
 	else
