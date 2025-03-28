@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="AnimePlay.cpp" />
     <ClCompile Include="EnemyAndBuffetManager.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="SDLAudioPlayer.cpp" />
     <ClCompile Include="MovingSpirit.cpp" />
     <ClCompile Include="main.cpp" />

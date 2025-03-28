@@ -39,6 +39,9 @@
     <ClCompile Include="AnimePlay.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Spirit.h">
@@ -100,6 +103,12 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resource\img\SixteenthRest.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\img\BadFlat.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\img\BadSharp.png">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
