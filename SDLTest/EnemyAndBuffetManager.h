@@ -14,7 +14,8 @@ public:
 	};
 
 	static std::vector<float> possiableYpos;
-
+	static int life;
+	static int score;
 	EnemyAndBuffetManager() = default;
 
 	bool AddEnemy(std::shared_ptr<Enemy>& enemy);
@@ -22,10 +23,11 @@ public:
 	bool AddComponent(SpiritNode* component,ComponentType componentType);
 	bool UpdataAll();
 	void GenerateEnemy(float xSpeed, float ySpeed,ComponentType type = NoneComponent);
-
 	void GenerateBullet(float x, float y, Bullet::BulletType bulletType);
+	void ResetAll();
 
 	SpiritNode* GetComponent(ComponentType type);
+
 private:
 	std::vector<std::shared_ptr<Enemy>> Enemys;
 	std::vector<std::shared_ptr<Bullet>> Bullets;
@@ -39,6 +41,7 @@ private:
 	unsigned FlatPro = 1;
 	unsigned SharpPro = 1;
 	unsigned NonePro = 2;
+
 	
 };
 

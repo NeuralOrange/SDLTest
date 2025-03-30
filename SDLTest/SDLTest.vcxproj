@@ -51,6 +51,7 @@
     <Image Include="resource\img\BadSharp.png" />
     <Image Include="resource\img\bullet.png" />
     <Image Include="resource\img\EighthRest.png" />
+    <Image Include="resource\img\GameOver.png" />
     <Image Include="resource\img\note.png" />
     <Image Include="resource\img\pinao.png" />
     <Image Include="resource\img\school.png" />
@@ -65,6 +66,7 @@
     <ProjectGuid>{8b002887-4309-4037-83c9-70f9bec1f363}</ProjectGuid>
     <RootNamespace>SDLTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>ShootingMusicGame</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

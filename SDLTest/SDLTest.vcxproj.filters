@@ -111,6 +111,9 @@
     <Image Include="resource\img\BadSharp.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="resource\img\GameOver.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SDLTest.rc">

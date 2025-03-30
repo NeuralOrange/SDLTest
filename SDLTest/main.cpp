@@ -23,7 +23,8 @@ const std::string MusicPath = "resource/music/";
 typedef enum GameState
 {
     GAME_MENU,
-    GAME_START
+    GAME_START,
+    GAME_OVER
 }GameState;
 
 typedef struct
@@ -49,7 +50,7 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
 	AppState* as = (AppState*)appstate;
 	SpiritNode* conSpir = as->spiritManager->GetSpirit(name);
     std::shared_ptr<Player> PlayerPtr = Player::GetPtr(as->spiritManager->GetGameObject(name));
-    if (as->gameState == GAME_MENU) 
+    if (as->gameState == GAME_MENU||as->gameState == GAME_OVER) 
     {
         switch (key_code) {
             /* Quit. */
@@ -57,9 +58,11 @@ static SDL_AppResult handle_key_down_event_(void* appstate,const std::string& na
         case SDL_SCANCODE_Q:
             return SDL_APP_SUCCESS;
         case SDL_SCANCODE_SPACE:
+            as->spiritManager->GetSpirit("GameOver")->Active(false);
             as->spiritManager->GetSpirit("menuScense")->Active(false);
             as->spiritManager->GetSpirit("gameScense")->Active(true);
             as->spiritManager->GetSpirit("note")->Active(false);
+            as->enemyAndBuffetManager->ResetAll();
             as->gameState = GAME_START;
             break;
         default:
@@ -174,6 +177,7 @@ static SDL_AppResult handle_mouse_down_event(void* appstate, const std::string& 
          as->spiritManager->GetSpirit("menuScense")->Active(false);
             as->spiritManager->GetSpirit("gameScense")->Active(true);
             as->spiritManager->GetSpirit("note")->Active(false);
+            as->enemyAndBuffetManager->ResetAll();
             as->gameState = GAME_START;
     }
     return SDL_APP_CONTINUE;
@@ -198,20 +202,27 @@ SDL_AppResult SDL_AppIterate(void* appstate)
             BackgroundPtr->Update(now - as->last_step);
             as->enemyAndBuffetManager->UpdataAll();
             PlayerPtr->Update(now - as->last_step);
+            if (EnemyAndBuffetManager::life <= 0) 
+            {
+                as->spiritManager->GetSpirit("gameScense")->Active(false);
+                as->spiritManager->GetSpirit("GameOver")->Active(true);
+                as->gameState = GAME_OVER;
+            }
         }
         as->last_step = now;
 
     }
     SDL_RenderClear(as->renderer);
-
-    //SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
-    //SDL_RenderClear(as->renderer);  /* start with a blank canvas. */
-
-    //SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);  /* white, full alpha */
-    //SDL_RenderDebugText(as->renderer, 272, 100, "Hello world!");
-
     //Í¼ÏñäÖÈ¾
 	as->spiritManager->DrawAll();
+    if (as->gameState == GAME_START) 
+    {
+        SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* white, full alpha */
+        SDL_SetRenderScale(as->renderer, 2.0f, 2.0f);
+        SDL_RenderDebugText(as->renderer, (SDL_WINDOW_WIDTH-200)/(2.0f), 20.0f/ (2.0f), ("LIFE:" + std::to_string(EnemyAndBuffetManager::life)).c_str());
+        SDL_RenderDebugText(as->renderer, (SDL_WINDOW_WIDTH - 200) / (2.0f), 40.0f / (2.0f), ("SCORE:" + std::to_string(EnemyAndBuffetManager::score)).c_str());
+        SDL_SetRenderScale(as->renderer, 1.0f, 1.0f);
+    }
     SDL_RenderPresent(as->renderer);
     return SDL_APP_CONTINUE;
 }
@@ -272,11 +283,17 @@ SDL_AppResult SpiritManagerInit(AppState* as)
     as->spiritManager->CreateSpirit(ImgPath + "BadEighthNote.png", Enemy::EnemyName(0), MOVE_SPIRIT_TYPE, 6, 0, 0);
     as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(0), as->spiritManager->GetSpirit(Enemy::EnemyName(0)), 4));
 
+    as->spiritManager->CreateSpirit(ImgPath + "BadSixteenthNote.png", Enemy::EnemyName(1), MOVE_SPIRIT_TYPE, 6, 0, 0);
+    as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(1), as->spiritManager->GetSpirit(Enemy::EnemyName(1)), 2));
     auto enemyTexture = as->spiritManager->GetSpirit(Enemy::EnemyName(0))->spirit->texture_;
-    for (int i = 1; i != 20; i++)
+    auto enemyTexture_ = as->spiritManager->GetSpirit(Enemy::EnemyName(1))->spirit->texture_;
+    for (int i = 1; i != 15; i++)
     {
-        as->spiritManager->CreateSpirit(enemyTexture, Enemy::EnemyName(i), MOVE_SPIRIT_TYPE, 6, 0, 0);
-        as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(i), as->spiritManager->GetSpirit(Enemy::EnemyName(i)), 4));
+        as->spiritManager->CreateSpirit(enemyTexture, Enemy::EnemyName(i*2), MOVE_SPIRIT_TYPE, 6, 0, 0);
+        as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(i*2), as->spiritManager->GetSpirit(Enemy::EnemyName(i*2)), 4));
+
+        as->spiritManager->CreateSpirit(enemyTexture_, Enemy::EnemyName(i * 2+1), MOVE_SPIRIT_TYPE, 6, 0, 0);
+        as->spiritManager->AddGameObject(std::make_shared<Enemy>(Enemy::EnemyName(i * 2+1), as->spiritManager->GetSpirit(Enemy::EnemyName(i * 2+1)), 2));
     }
 
     as->spiritManager->CreateSpirit(ImgPath + "EighthRest.png", Bullet::BulletName(0, Bullet::EighthRest), MOVE_SPIRIT_TYPE, 4, 0, 0);
@@ -334,7 +351,8 @@ SDL_AppResult SpiritManagerInit(AppState* as)
         as->enemyAndBuffetManager->AddComponent(as->spiritManager->GetSpirit("Sharp" + std::to_string(i)), EnemyAndBuffetManager::Sharp);
         as->enemyAndBuffetManager->AddComponent(as->spiritManager->GetSpirit("Flat" + std::to_string(i)), EnemyAndBuffetManager::Flat);
     }
-   
+    as->spiritManager->CreateSpirit(ImgPath + "GameOver.png", "GameOver", SPIRIT_TYPE, 1, 0, 0);
+    as->spiritManager->GetSpirit("GameOver")->Active(false);
     return SDL_APP_SUCCESS;
 }
 
@@ -348,11 +366,6 @@ SDL_AppResult SpiritManagerInit(AppState* as)
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
- 
-    if (!SDL_SetAppMetadata("Example Snake game", "1.0", "com.example.Snake")) {
-        return SDL_APP_FAILURE;
-    }
-
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -365,7 +378,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     *appstate = as;
 
-    if (!SDL_CreateWindowAndRenderer("examples/demo/music", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Shooting Music Game", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
     

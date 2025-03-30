@@ -269,6 +269,7 @@ bool Enemy::Update(Uint64 time)
     if (spiritNode_->spirit->rect_.x < -spiritNode_->spirit->rect_.w)
     {
         Reset();
+        EnemyAndBuffetManager::life -= 10;
         return false;
     }
 
@@ -292,8 +293,10 @@ bool Enemy::Update(Uint64 time)
         auto yPos = spiritNode_->spirit->rect_.y;
         animePlay->flashStart = true;
         if (animePlay->PlayAnime())
+        {
+            EnemyAndBuffetManager::score += 100;
             Reset();
-
+        }
 
     }
     return true;

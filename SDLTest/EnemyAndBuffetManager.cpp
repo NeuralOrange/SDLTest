@@ -12,6 +12,9 @@ std::vector<float> EnemyAndBuffetManager::possiableYpos = []() {
     return temp;
     }();
 
+int EnemyAndBuffetManager::life = 100;
+int EnemyAndBuffetManager::score = 0;
+
 bool EnemyAndBuffetManager::AddEnemy(std::shared_ptr<Enemy>& enemy)
 {
     if (enemy == nullptr)
@@ -161,6 +164,34 @@ void EnemyAndBuffetManager::GenerateBullet(float x, float y, Bullet::BulletType 
 	}
 }
 
+void EnemyAndBuffetManager::ResetAll()
+{
+	life = 100;
+	score = 0;
+	for (auto& enemy : Enemys) 
+	{
+		enemy->GetSpiritNode()->Active(false);
+		enemy->active = false;
+	}
+
+	for (auto& sharp : Sharps) 
+	{
+		sharp->Active(false);
+	}
+
+	for (auto& flat : Flats) 
+	{
+		flat->Active(false);
+	}
+
+	for (auto& bullet : Bullets) 
+	{
+		bullet->active = false;
+		bullet->GetSpiritNode()->Active(false);
+	}
+}
+
+
 SpiritNode* EnemyAndBuffetManager::GetComponent(ComponentType type)
 {
 	switch (type)
@@ -185,3 +216,4 @@ SpiritNode* EnemyAndBuffetManager::GetComponent(ComponentType type)
 	}
 	return nullptr;
 }
+

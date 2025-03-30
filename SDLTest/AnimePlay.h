@@ -39,6 +39,7 @@ public:
 			if (animalCount == flashList.size()) 
 			{
 				animalCount = 0;
+				spirit->ChangeState(flashList[animalCount]);
 				if (!isLoop)
 				{
 					spirit->ChangeState(flashList[endState]);

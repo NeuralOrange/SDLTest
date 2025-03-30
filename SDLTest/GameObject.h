@@ -2,7 +2,6 @@
 #include "SpiritManager.h"
 #include "AnimePlay.h"
 
-
 #define STEP_RATE_IN_MILLISECONDS  10
 #define SDL_WINDOW_WIDTH           1024
 #define SDL_WINDOW_HEIGHT          768
